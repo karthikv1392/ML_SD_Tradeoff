@@ -1,14 +1,5 @@
-from loguru import logger
-from fastapi import FastAPI
+if __name__ == '__main__':
+    import uvicorn
 
-import edge_router.router
-
-app = FastAPI(
-    title="Dummy",
-    description="",
-    version="0.0.1"
-)
-
-
-app.include_router(edge_router.router.router)
+    uvicorn.run('apigateway.app:app', host='0.0.0.0', port=8000, reload=True)
 

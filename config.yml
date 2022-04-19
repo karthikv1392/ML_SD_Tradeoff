@@ -1,30 +1,12 @@
 catalogue:
-  name: catalogue
   aliases:
     - catalogue
     - tags
-  instances:
-    catalogue_1:
-        host: localhost
-        port: 8051
-    catalogue_2:
-        host: localhost
-        port: 8053
-    catalogue_3:
-        host: localhost
-        port: 8052
 payment:
-  name: payment
   aliases:
     - health
     - paymentAuth
-  instances:
-    payment_1:
-        host: localhost
-        port: 8056
-    payment_2:
-        host: localhost
-        port: 8055
-    payment_3:
-        host: localhost
-        port: 8054
+orders:
+  aliases:
+    - orders
+

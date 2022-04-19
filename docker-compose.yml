@@ -1,0 +1,114 @@
+version: '3'
+
+services:
+  dmon:
+    image: softarch2021/dmon:latest
+    hostname: dmon
+    restart: always
+    network_mode: "host"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: -i docker_gwbridge -n docker_gwbridge -t 2,2
+    depends_on:
+      - catalogue
+      - payment
+#      - orders
+#  edge_router:
+#    build: .
+#    command: uvicorn app.main:app --reload --host 0.0.0.0
+#    volumes:
+#      - .:/app
+#    ports:
+#      - "8000:8000"
+#    networks:
+#      - external
+#      - internal
+#      - backoffice
+#      - secure
+#    environment:
+#      - DMON_REDIS_HOST=host.docker.internal
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+  catalogue:
+    image: weaveworksdemos/catalogue:0.3.5
+    hostname: catalogue
+    dns: 172.17.0.1
+    dns_search: weave.local
+    restart: always
+    ports:
+      - "8051-8053:80"
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints: [node.role == worker]
+    networks:
+      - external
+  cat-db:
+    image: weaveworksdemos/catalogue-db:0.3.0
+    hostname: catalogue-db
+    dns: 172.17.0.1
+    dns_search: weave.local
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=socksdb
+    networks:
+      - external
+#  orders:
+#    image: weaveworksdemos/orders:0.4.7
+#    hostname: orders
+#    dns: 172.17.0.1
+#    dns_search: weave.local
+#    restart: always
+#    ports:
+#      - "8057-8059:80"
+#    deploy:
+#      mode: replicated
+#      replicas: 3
+#      placement:
+#        constraints: [node.role == worker]
+#    environment:
+#      - reschedule=on-node-failure
+#      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+#    networks:
+#      - internal
+#      - secure
+#      - backoffice
+#  ord-db:
+#    image: mongo:3.4
+#    hostname: ord-db
+#    dns: 172.17.0.1
+#    dns_search: weave.local
+#    restart: always
+#    environment:
+#      - reschedule=on-node-failure
+#    networks:
+#      - internal
+  payment:
+    image: weaveworksdemos/payment:0.4.3
+    hostname: payment
+    dns: 172.17.0.1
+    dns_search: weave.local
+    restart: always
+    ports:
+      - "8054-8056:80"
+    environment:
+      - reschedule=on-node-failure
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints: [node.role == worker]
+    networks:
+      - secure
+networks:
+  external:
+    driver: weavemesh
+  internal:
+    driver: weavemesh
+  backoffice:
+    driver: weavemesh
+  secure:
+    driver: weavemesh
