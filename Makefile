@@ -2,8 +2,8 @@
 
 # include config.mk
 
-MAIN_COMPOSE = ./docker-compose.yml
-
+MAIN_COMPOSE = ./docker-compose/docker-compose.yml
+TEST_COMPOSE = ./docker-compose/docker-compose.test.yml
 
 .DEFAULT_GOAL := help
 
@@ -12,7 +12,7 @@ MAIN_COMPOSE = ./docker-compose.yml
 help:
 	@grep '^.PHONY: .* #' $(firstword $(MAKEFILE_LIST)) |\
 		sed 's/\.PHONY: \(.*\) # \(.*\)/\1 # \2/' |\
-		awk 'BEGIN {FS = "#"}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' 
+		awk 'BEGIN {FS = "#"}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .SILENT: weave_check
 .PHONY: weave_check # weave-net and weave-scope check
@@ -53,7 +53,7 @@ docker_check:
 check: weave_check compose_check docker_check
 
 .SILENT: run
-.PHONY: run # start sockshop in std-mode (without services replication)
+.PHONY: run
 run: check
 	echo "START: weave-net"
 	weave launch
@@ -65,10 +65,36 @@ run: check
 	docker-compose -f "$(MAIN_COMPOSE)" up -d
 
 .SILENT: stop
-.PHONY: stop # stop sockshop in std-mode (without services replication)
+.PHONY: stop
 stop: check
 	echo "STOP: docker-compose down $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" down
+	echo "CLEAN: docker system prune -f"
+	docker system prune -f
+	echo "STOP: weave-scope"
+	scope stop
+	echo "STOP: weave-net"
+	weave stop
+	echo "RESET: weave-net"
+	weave reset --force
+
+.SILENT: run_test
+.PHONY: run_test
+run_test: check
+	echo "START: weave-net"
+	weave launch
+	echo "START: weave-scope"
+	scope launch
+	echo "BUILD: docker-compose build $(TEST_COMPOSE)"
+	docker-compose -f "$(TEST_COMPOSE)" build
+	echo "START: docker-compose up $(TEST_COMPOSE)"
+	docker-compose -f "$(TEST_COMPOSE)" up
+
+.SILENT: stop_test
+.PHONY: stop_test
+stop_test: check
+	echo "STOP: docker-compose down $(TEST_COMPOSE)"
+	docker-compose -f "$(TEST_COMPOSE)" down
 	echo "CLEAN: docker system prune -f"
 	docker system prune -f
 	echo "STOP: weave-scope"

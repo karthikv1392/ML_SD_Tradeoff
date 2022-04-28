@@ -1,0 +1,12 @@
+catalogue:
+  aliases:
+    - catalogue
+    - tags
+payment:
+  aliases:
+    - health
+    - paymentAuth
+orders:
+  aliases:
+    - orders
+

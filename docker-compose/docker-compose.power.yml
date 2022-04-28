@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  scaphandre:
+    image: hubblo/scaphandre
+    volumes:
+      - /sys/class/powercap:/sys/class/powercap
+      - /proc:/proc
+      - output:/home
+    tty: true
+    command: json -t 10 -s 0 -n 100000000 -f /home/report.json
+volumes:
+  output:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/steph'
+
