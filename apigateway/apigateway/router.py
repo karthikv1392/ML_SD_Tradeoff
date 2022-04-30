@@ -27,16 +27,17 @@ async def get_interceptor(request: Request):
             }
     logger.debug(info)
 
-    # TODO: ask registry to provide a valid service instance
     alias: str = utils.get_alias_by_path(info['path'])
-    instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
-    instance = instance_response.json()
 
-    if instance is None:
+    instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
+
+    if instance_response.status_code == 404:
         raise HTTPException(
             status_code=404,
             detail=f"No service found for alias {alias}",
         )
+
+    instance = instance_response.json()
 
     logger.debug(f"Serving with instance {instance}")
 

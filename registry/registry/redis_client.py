@@ -1,15 +1,15 @@
 from redis import Redis
 from loguru import logger
 
-from .config import DMON_REDIS_HOST, DMON_REDIS_PORT, DMON_REDIS_DB
+from .config import REDIS_HOST, REDIS_PORT, REDIS_DB
 
 
 def init_redis_client():
     """Initiliaze a redis client with the info present in the config file"""
     redis_client = Redis(
-        host=DMON_REDIS_HOST,
-        port=DMON_REDIS_PORT,
-        db=DMON_REDIS_DB
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        db=REDIS_DB
     )
 
     redis_client.ping()

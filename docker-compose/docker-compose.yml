@@ -8,35 +8,46 @@ services:
     network_mode: "host"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    command: -i weave -n weave,ml_sd_tradeoff_external -t 2,2
-#    depends_on:
-#      - catalogue
-#      - payment
-#      - orders
-#  edge_router:
-#    build: .
-#    command: uvicorn app.main:app --reload --host 0.0.0.0
-#    volumes:
-#      - .:/app
-#    ports:
-#      - "8000:8000"
-#    networks:
-#      - external
-#      - internal
-#      - backoffice
-#      - secure
-#    environment:
-#      - DMON_REDIS_HOST=host.docker.internal
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway"
+    command: -i weave -n weave,ml_sd_tradeoff_external -t 1,1
+    depends_on:
+      - catalogue
+      - payment
+      - orders
+  apigateway:
+    build: ../apigateway
+    hostname: apigateway
+    restart: always
+    dns: 172.17.0.1
+    dns_search: weave.local
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - monitoring
+      - internal
+    depends_on:
+      - registry
+  registry:
+    build: ../registry
+    hostname: registry
+    restart: always
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    networks:
+      - internal
+    environment:
+      - REDIS_HOST=172.17.0.1
+    depends_on:
+      - dmon
   catalogue:
     image: weaveworksdemos/catalogue:0.3.5
     hostname: catalogue
     dns: 172.17.0.1
     dns_search: weave.local
     restart: always
-#    ports:
-#      - "8051-8053:80"
     deploy:
       mode: replicated
       replicas: 3
@@ -57,44 +68,41 @@ services:
       - MYSQL_DATABASE=socksdb
     networks:
       - external
-#  orders:
-#    image: weaveworksdemos/orders:0.4.7
-#    hostname: orders
-#    dns: 172.17.0.1
-#    dns_search: weave.local
-#    restart: always
-#    ports:
-#      - "8057-8059:80"
-#    deploy:
-#      mode: replicated
-#      replicas: 3
-#      placement:
-#        constraints: [node.role == worker]
-#    environment:
-#      - reschedule=on-node-failure
-#      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
-#    networks:
-#      - internal
-#      - secure
-#      - backoffice
-#  ord-db:
-#    image: mongo:3.4
-#    hostname: ord-db
-#    dns: 172.17.0.1
-#    dns_search: weave.local
-#    restart: always
-#    environment:
-#      - reschedule=on-node-failure
-#    networks:
-#      - internal
+  orders:
+    image: weaveworksdemos/orders:0.4.7
+    hostname: orders
+    dns: 172.17.0.1
+    dns_search: weave.local
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 3
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - reschedule=on-node-failure
+      - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    networks:
+      - monitoring
+      - internal
+      - secure
+      - backoffice
+  ord-db:
+    image: mongo:3.4
+    hostname: orders-db
+    dns: 172.17.0.1
+    dns_search: weave.local
+    restart: always
+    environment:
+      - reschedule=on-node-failure
+    networks:
+      - internal
   payment:
     image: weaveworksdemos/payment:0.4.3
     hostname: payment
     dns: 172.17.0.1
     dns_search: weave.local
     restart: always
-#    ports:
-#      - "8054-8056:80"
     environment:
       - reschedule=on-node-failure
     deploy:
@@ -108,10 +116,10 @@ services:
 networks:
   external:
     driver: bridge
-  # internal:
-  #   driver: bridge
-  # backoffice:
-  #   driver: bridge
+  internal:
+    driver: bridge
+  backoffice:
+    driver: bridge
   secure:
     driver: bridge
   monitoring:

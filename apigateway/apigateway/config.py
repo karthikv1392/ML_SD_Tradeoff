@@ -2,9 +2,9 @@ import os
 
 
 APP_ENV = os.getenv('APP_ENV', 'dev')
-REDIS_HOST = os.getenv('DMON_REDIS_HOST', '127.0.0.1')
-REDIS_PORT = os.getenv('DMON_REDIS_PORT', '6379')
-REDIS_DB = os.getenv('DMON_REDIS_DB', '1')
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = os.getenv('REDIS_DB', '1')
 
 DMON_NETWORK_TOPIC = os.getenv('DMON_NETWORK_TOPIC', 'dmon_network_out')
 DMON_STRUCTURE_TOPIC = os.getenv('DMON_STRUCTURE_TOPIC', 'dmon_structure_out')

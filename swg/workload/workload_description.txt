@@ -1,0 +1,31 @@
+---: define the start of a day
+
+#: define a comment
+
+- Separator: ;
+
+- Params description:
+    APIName: string, define the request's name
+
+    Rate: uint32, define the rate of the request
+
+    RateType: string{sec, min, hr}, the rate type of the request (sec: seconds, min: minutes, hr: hours)
+
+    Param: string (json)[optional], request parameter
+
+- Structure:
+    APIName; Rate; RateType; Param?
+
+- Param specification (JSON string):
+    catalogue_get_by_id: {"id", ""}
+    register_post: {"register": {"username": "", "password": "", "email": ""}}
+    customers_delete_by_id: {"id", ""}
+    customers_get_by_id: {"id", ""}
+    customers_get_cards_by_id: {"id", ""}
+    customers_get_addresses_by_customer_id: {"id", ""}
+    cards_create_post: {"card": {"longnum": "", "expires": "", "ccv": "", "userID": ""}}
+    cards_delete_by_id: {"id", ""}
+    cards_get_by_id: {"id", ""}
+    address_create_post: {"address": {"street": "", "number": "", "country": "", "city": "", "postcode": "", "userID": ""}}
+    addresses_delete_by_id: {"id", ""}
+    addresses_get_by_id: {"id", ""}

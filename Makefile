@@ -48,9 +48,18 @@ docker_check:
 		exit 1; \
 	}
 
+.SILENT: redis_check
+.PHONY: redis_check # docker and docker-compose check
+redis_check:
+	if [ -n "$(compgen -c | grep redis-server | sort -u)" ]; then \
+		echo "ERROR: redis-server is not installed"; \
+		exit 1; \
+	fi
+
+
 .SILENT: check
 .PHONY: check # general check rule
-check: weave_check compose_check docker_check
+check: weave_check compose_check docker_check redis_check
 
 .SILENT: run
 .PHONY: run
@@ -62,39 +71,13 @@ run: check
 	echo "BUILD: docker-compose build $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" build -q
 	echo "START: docker-compose up $(MAIN_COMPOSE)"
-	docker-compose -f "$(MAIN_COMPOSE)" up -d
+	docker-compose -f "$(MAIN_COMPOSE)" up
 
 .SILENT: stop
 .PHONY: stop
 stop: check
 	echo "STOP: docker-compose down $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" down
-	echo "CLEAN: docker system prune -f"
-	docker system prune -f
-	echo "STOP: weave-scope"
-	scope stop
-	echo "STOP: weave-net"
-	weave stop
-	echo "RESET: weave-net"
-	weave reset --force
-
-.SILENT: run_test
-.PHONY: run_test
-run_test: check
-	echo "START: weave-net"
-	weave launch
-	echo "START: weave-scope"
-	scope launch
-	echo "BUILD: docker-compose build $(TEST_COMPOSE)"
-	docker-compose -f "$(TEST_COMPOSE)" build
-	echo "START: docker-compose up $(TEST_COMPOSE)"
-	docker-compose -f "$(TEST_COMPOSE)" up
-
-.SILENT: stop_test
-.PHONY: stop_test
-stop_test: check
-	echo "STOP: docker-compose down $(TEST_COMPOSE)"
-	docker-compose -f "$(TEST_COMPOSE)" down
 	echo "CLEAN: docker system prune -f"
 	docker system prune -f
 	echo "STOP: weave-scope"
