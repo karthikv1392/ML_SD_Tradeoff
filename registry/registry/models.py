@@ -91,20 +91,20 @@ class ServiceRegistry:
                 return False
         return True
 
-    def search_by_ip_address(self, ip_address: str) -> str:
+    def search_by_ip_address(self, ip_address: str):
         """Retrieve a registered service instance name by its ip address"""
         for inspector in self.inspectors:
             for service in inspector.instances:
                 for ip in service.ip_addresses:
                     if service.ip_addresses[ip] == ip_address:
-                        return service.name
+                        return {"type": inspector.name, "name": service.name}
 
-    def search_by_name(self, instance_name: str) -> ServiceInstance:
+    def search_by_name(self, instance_name: str):
         """Retrieve a registered service instance name by its ip address"""
         for inspector in self.inspectors:
             for service in inspector.instances:
                 if service.name == instance_name:
-                    return service
+                    return {"type": inspector.name, "name": service.name}
 
 
 class ContainerStructure:

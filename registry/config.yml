@@ -9,4 +9,11 @@ payment:
 orders:
   aliases:
     - orders
+user:
+  aliases:
+    - login
+    - register
+    - customers
+    - cards
+    - addresses
 

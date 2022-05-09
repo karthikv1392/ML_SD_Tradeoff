@@ -17,11 +17,12 @@ def extract_call(data):
     if registry_response.status_code != 200:
         logger.debug(f"No service instance found for ip {ip}")
         return
-    service_name = registry_response.json()
+    registry_response = registry_response.json()
 
     service_call: ServiceCall = ServiceCall(timestamp=data['Timestamp'],
                                             time_delta=data['TimeDelta'],
-                                            service_instance=service_name)
+                                            service_instance=registry_response['name'],
+                                            service_type=registry_response['type'])
 
     services.store_service_call(service_call)
 
@@ -38,11 +39,16 @@ def extract_status(data):
     if registry_response.status_code != 200:
         return
 
+    registry_response = registry_response.json()
+
+    service_type = registry_response['type']
+
     cpu_perc: str = data['CPUPerc']
     cpu_perc = cpu_perc.replace('%', '')
     service_status: ServiceStatus = ServiceStatus(timestamp=data['Timestamp'],
                                                   cpu_perc=cpu_perc,
-                                                  service_instance=service_name)
+                                                  service_instance=service_name,
+                                                  service_type=service_type)
 
     services.store_service_status(service_status)
 

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from loguru import logger
 from fastapi import APIRouter, Request, Response, Depends, HTTPException
 
@@ -33,7 +35,7 @@ async def get_random_instance(alias: str, registry_provider: RegistryProviderSer
     if inspector is not None:
         instance: ServiceInstance = inspector.get_random_instance()
 
-        return instance.name
+        return {"type": inspector.name, "name": instance.name}
     else:
         raise HTTPException(
             status_code=404,
@@ -47,14 +49,14 @@ async def get_instance_by_ip(ip: str, registry_provider: RegistryProviderService
     registry_provider = registry_provider.get_registry_provider()
     service_registry: ServiceRegistry = registry_provider.get_registry_instance()
     logger.debug(f"ip: {ip}")
-    instance_name: str = service_registry.search_by_ip_address(ip)
+    retrieved_instance = service_registry.search_by_ip_address(ip)
 
-    if instance_name is None:
+    if retrieved_instance is None:
         raise HTTPException(
             status_code=404,
             detail=f"No service found for ip {ip}",
         )
-    return instance_name
+    return retrieved_instance
 
 
 @router.get('/services/by-name/{instance_name}')

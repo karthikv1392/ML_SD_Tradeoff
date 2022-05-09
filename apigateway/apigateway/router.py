@@ -25,7 +25,6 @@ async def get_interceptor(request: Request):
             "host": request.client.host,
             "body": await request.body(),
             }
-    logger.debug(info)
 
     alias: str = utils.get_alias_by_path(info['path'])
 
@@ -39,10 +38,10 @@ async def get_interceptor(request: Request):
 
     instance = instance_response.json()
 
-    logger.debug(f"Serving with instance {instance}")
+    logger.debug(f"Serving with instance {instance['name']}")
 
     # redirect to provided instance
-    url = f"http://{instance}.weave.local{info['path']}"
+    url = f"http://{instance['name']}.weave.local{info['path']}"
     logger.debug(url)
 
     request = requests.Request(info['method'],

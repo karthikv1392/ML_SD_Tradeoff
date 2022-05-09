@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DAY_LENGTH=60
+DAY_LENGTH=180
 WORKLOAD_FILE_PATH="./workload/workload_test.txt"
 
 # START monitoring
@@ -18,4 +18,3 @@ cd ./swg || exit 1
 # STOP monitoring
 cd ../monitoring || exit 1
 ./terminate.sh
-
