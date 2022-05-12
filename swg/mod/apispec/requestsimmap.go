@@ -22,6 +22,8 @@ var RequestSimMap map[string]model.SimAPI = map[string]model.SimAPI{
 	"cards_get_by_id":                        CardsGetByIdSim,
 	"addresses_get_all":                      AddressesGetAllSim,
 	"addresses_get_by_id":                    AddressesGetByIdSim,
+	"cart_get_by_cust_id":										CartGetSim,
+	"shipping_get_all":												ShippingGetAllSim,
 	// All POST methods
 	"paymentauth_post":      PaymentAuthPostSim,
 	"orders_create_post":    OrdersCreateSim,

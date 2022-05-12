@@ -64,6 +64,12 @@ check: weave_check compose_check docker_check redis_check
 .SILENT: run
 .PHONY: run
 run: check
+	echo "START: redis-server"
+	redis-server --daemonize yes
+	echo "SLEEP 1"
+	sleep 1
+	echo "CONFIG: protected-mode no"
+	redis-cli CONFIG SET protected-mode no
 	echo "START: weave-net"
 	weave launch
 	echo "START: weave-scope"
@@ -71,11 +77,13 @@ run: check
 	echo "BUILD: docker-compose build $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" build -q
 	echo "START: docker-compose up $(MAIN_COMPOSE)"
-	docker-compose -f "$(MAIN_COMPOSE)" up -d
+	docker-compose -f "$(MAIN_COMPOSE)" up
 
 .SILENT: stop
 .PHONY: stop
 stop: check
+	echo "STOP: redis-server"
+	redis-cli shutdown
 	echo "STOP: docker-compose down $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" down
 	echo "CLEAN: docker system prune -f"

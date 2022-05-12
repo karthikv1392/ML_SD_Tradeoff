@@ -37,3 +37,9 @@ var AddressesGetAllSim model.SimAPI = model.SimAPI{TargetApi: AddressesGetAll}
 var AddressesCreateSim model.SimAPI = model.SimAPI{TargetApi: AddressesCreate}
 var AddressesDeleteByIdSim model.SimAPI = model.SimAPI{TargetApi: AddressesDeleteById}
 var AddressesGetByIdSim model.SimAPI = model.SimAPI{TargetApi: AddressesGetById}
+
+// Carts
+var CartGetSim model.SimAPI = model.SimAPI{TargetApi: CartGet}
+
+// Shipping
+var ShippingGetAllSim model.SimAPI = model.SimAPI{TargetApi: ShippingGetAll}

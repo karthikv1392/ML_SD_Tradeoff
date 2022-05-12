@@ -16,4 +16,10 @@ user:
     - customers
     - cards
     - addresses
+carts:
+  aliases:
+    - carts
+shipping:
+  aliases:
+    - shipping
 

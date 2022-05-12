@@ -41,3 +41,9 @@ var AddressesGetAll model.API = model.API{RelativeUrl: "/addresses", Method: "GE
 var AddressesCreate model.API = model.API{RelativeUrl: "/addresses", Method: "POST", ExtParamName: "address"}
 var AddressesDeleteById model.API = model.API{RelativeUrl: "/addresses/%s", Method: "DELETE", ExtParamName: "id"}
 var AddressesGetById model.API = model.API{RelativeUrl: "/addresses/%s", Method: "GET", ExtParamName: "id"}
+
+// Carts
+var CartGet model.API = model.API{RelativeUrl: "/carts/%s/items", Method: "GET", ExtParamName: "id"}
+
+// Shipping
+var ShippingGetAll model.API = model.API{RelativeUrl: "/shipping", Method: "GET"}
