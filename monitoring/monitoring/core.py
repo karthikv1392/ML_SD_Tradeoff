@@ -9,7 +9,7 @@ import monitoring.services as services
 
 
 def extract_call(data):
-    if data["SubType"] != "delta":
+    if data["Protocol"] != "HTTP/JSON":
         return
     ip = data['SendIP']
     registry_response = requests.get(f"http://{config.REGISTRY_HOST}/services/by-ip/{ip}")
@@ -69,3 +69,9 @@ class RedisMonitor:
                 extract_call(data)
             elif topic == DMON_STRUCTURE_TOPIC:
                 extract_status(data)
+
+    def test(self, topic):
+        sub = get_subscriber(self.redis_client, topic)
+        for entry in sub.listen():
+            logger.debug(entry)
+

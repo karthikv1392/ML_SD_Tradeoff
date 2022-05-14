@@ -45,6 +45,11 @@ class ServiceInspector:
             logger.debug("There aren't instances available for this service")
         return random.choice(self.instances)
 
+    def get_all_instances(self) -> List[str]:
+        i_list: List[str] = []
+        for i in self.instances:
+            i_list.append(i.name)
+        return i_list
 
 class ServiceRegistry:
     """The ServiceRegistry class holds information about all registered services"""
@@ -105,6 +110,13 @@ class ServiceRegistry:
             for service in inspector.instances:
                 if service.name == instance_name:
                     return {"type": inspector.name, "name": service.name}
+
+    def search_inspector_by_alias(self, alias: str) -> ServiceInspector:
+        """Retrieve a service inspector by alias"""
+        for inspector in self.inspectors:
+            for a in inspector.aliases:
+                if a == alias:
+                    return inspector
 
 
 class ContainerStructure:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DAY_DURATION=20
+DAY_DURATION=600
 DAYS_COUNT=2
 WORKLOAD_FILE_PATH="./workload/workload_2_days.txt"
 

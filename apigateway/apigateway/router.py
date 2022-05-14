@@ -26,35 +26,70 @@ async def get_interceptor(request: Request):
             "body": await request.body(),
             }
 
+    # RANDOM RETRIEVE
+    # alias: str = utils.get_alias_by_path(info['path'])
+    #
+    # instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
+    #
+    # if instance_response.status_code == 404:
+    #     raise HTTPException(
+    #         status_code=404,
+    #         detail=f"No service found for alias {alias}",
+    #     )
+    #
+    # instance = instance_response.json()
+    #
+    # logger.debug(f"Serving with instance {instance['name']}")
+    #
+    # # redirect to provided instance
+    # url = f"http://{instance['name']}.weave.local{info['path']}"
+    # logger.debug(url)
+    #
+    # request = requests.Request(info['method'],
+    #                            url,
+    #                            data=info['body'],
+    #                            headers=info['headers'],
+    #                            params=info['query_params'])
+    # s = requests.Session()
+    #
+    # prepped = request.prepare()
+    #
+    # response = s.send(prepped)
+    #
+    # logger.debug(response.content)
+
+    # PING ALL INSTANCES
     alias: str = utils.get_alias_by_path(info['path'])
 
-    instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
+    instances_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}/all")
 
-    if instance_response.status_code == 404:
+    if instances_response.status_code == 404:
         raise HTTPException(
             status_code=404,
             detail=f"No service found for alias {alias}",
         )
 
-    instance = instance_response.json()
+    instances_name = instances_response.json()
 
-    logger.debug(f"Serving with instance {instance['name']}")
+    logger.debug(f"Found {len(instances_name)} instances.")
 
-    # redirect to provided instance
-    url = f"http://{instance['name']}.weave.local{info['path']}"
-    logger.debug(url)
+    response = None
+    for i_name in instances_name:  # redirect to all instances
 
-    request = requests.Request(info['method'],
-                               url,
-                               data=info['body'],
-                               headers=info['headers'],
-                               params=info['query_params'])
-    s = requests.Session()
+        url = f"http://{i_name}.weave.local{info['path']}"
+        logger.debug(url)
 
-    prepped = request.prepare()
+        request = requests.Request(info['method'],
+                                   url,
+                                   data=info['body'],
+                                   headers=info['headers'],
+                                   params=info['query_params'])
+        s = requests.Session()
 
-    response = s.send(prepped)
+        prepped = request.prepare()
 
-    logger.debug(response.content)
+        response = s.send(prepped)
+
+        logger.debug(response.content)
 
     return Response(content=response.content, headers=response.headers, status_code=response.status_code)

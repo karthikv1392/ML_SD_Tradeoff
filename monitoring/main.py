@@ -1,4 +1,4 @@
-from monitoring.config import DMON_NETWORK_TOPIC, DMON_STRUCTURE_TOPIC
+from monitoring.config import DMON_NETWORK_TOPIC, DMON_STRUCTURE_TOPIC, DMON_MERGED_TOPIC
 from monitoring.core import RedisMonitor
 import argparse
 from loguru import logger
@@ -14,6 +14,9 @@ parser.add_argument("--day_duration", type=str)
 
 args = parser.parse_args()
 
+if args.m == "test":
+    service_monitor = RedisMonitor()
+    service_monitor.test(DMON_MERGED_TOPIC)
 if args.m == "response_time":
     service_monitor = RedisMonitor()
     service_monitor.start_monitoring(DMON_NETWORK_TOPIC)

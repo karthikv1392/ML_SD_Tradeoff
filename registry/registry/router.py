@@ -73,3 +73,22 @@ async def get_instance_by_name(instance_name: str, registry_provider: RegistryPr
             detail=f"No service found for name {instance_name}",
         )
     return instance
+
+
+@router.get('/services/{alias}/all')
+async def get_all_instances_by_alias(alias: str, registry_provider: RegistryProviderService = Depends(get_registry_provider)):
+
+    registry_provider = registry_provider.get_registry_provider()
+    service_registry: ServiceRegistry = registry_provider.get_registry_instance()
+
+    inspector: ServiceInspector = service_registry.retrieve_inspector_by_alias(alias)
+
+    if inspector is not None:
+        instances_name = inspector.get_all_instances()
+
+        return instances_name
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No service found for alias {alias}",
+        )

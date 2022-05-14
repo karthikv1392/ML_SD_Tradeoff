@@ -8,12 +8,14 @@ services:
     network_mode: "host"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    command: -i weave -n weave -t 1,1
+    command: -i weave -n weave -t 5
     depends_on:
       - catalogue
       - payment
       - orders
       - user
+      - carts
+      - shipping
   apigateway:
     build: ../apigateway
     hostname: apigateway
@@ -155,7 +157,7 @@ services:
         constraints: [node.role == worker]
     networks:
       - internal
-      - monitoring        
+      - monitoring
   crts-db:
     image: mongo:3.4
     hostname: carts-db
