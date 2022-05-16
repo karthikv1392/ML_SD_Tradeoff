@@ -83,6 +83,7 @@ run: check
 .PHONY: stop
 stop: check
 	echo "STOP: redis-server"
+	redis-cli flushdb
 	redis-cli shutdown
 	echo "STOP: docker-compose down $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" down

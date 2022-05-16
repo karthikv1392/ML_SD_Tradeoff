@@ -9,13 +9,13 @@ import monitoring.services as services
 
 
 def extract_call(data):
-    if data["Protocol"] != "HTTP/JSON":
+    if data["Protocol"] != "HTTP/JSON" and data["Protocol"] != "HTTP":
         return
     ip = data['SendIP']
     registry_response = requests.get(f"http://{config.REGISTRY_HOST}/services/by-ip/{ip}")
 
     if registry_response.status_code != 200:
-        logger.debug(f"No service instance found for ip {ip}")
+        # logger.debug(f"No service instance found for ip {ip}")
         return
     registry_response = registry_response.json()
 
@@ -60,15 +60,21 @@ class RedisMonitor:
     def start_monitoring(self, topic):
         sub = get_subscriber(self.redis_client, topic)
 
-        for entry in sub.listen():
-            if entry['data'] == 1:
-                continue  # skip init data
-            data = ast.literal_eval(entry['data'].decode())
+        try:
 
-            if topic == DMON_NETWORK_TOPIC:
-                extract_call(data)
-            elif topic == DMON_STRUCTURE_TOPIC:
-                extract_status(data)
+            for entry in sub.listen():
+                if entry['data'] == 1:
+                    continue  # skip init data
+                data = ast.literal_eval(entry['data'].decode())
+
+                if topic == DMON_NETWORK_TOPIC:
+                    extract_call(data)
+                elif topic == DMON_STRUCTURE_TOPIC:
+                    extract_status(data)
+
+        except ConnectionError:
+            logger.debug("Restarting monitoring..")
+            self.start_monitoring(topic)
 
     def test(self, topic):
         sub = get_subscriber(self.redis_client, topic)

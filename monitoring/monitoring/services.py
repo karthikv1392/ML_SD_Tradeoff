@@ -13,7 +13,7 @@ def store_service_status(service_status: ServiceStatus):
     database.commit()
     database.refresh(service_status)
 
-    logger.debug(f"Successfully added Service Status with id: {service_status.id}")
+    # logger.debug(f"Successfully added Service Status with id: {service_status.id}")
 
 
 def store_service_call(service_call: ServiceCall):
@@ -22,7 +22,7 @@ def store_service_call(service_call: ServiceCall):
 
     database.refresh(service_call)
 
-    logger.debug(f"Successfully added Service Call with id: {service_call.id}")
+    # logger.debug(f"Successfully added Service Call with id: {service_call.id}")
 
 
 def store_workload(ts_init, ts_end, days_count, day_duration):
