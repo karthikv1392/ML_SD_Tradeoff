@@ -1,5 +1,4 @@
 import random
-import ast
 from typing import List
 
 from loguru import logger
@@ -135,8 +134,7 @@ class ContainerStructure:
 
     @staticmethod
     def parse(structure_entry):
-        # str -> dict
-        structure_entry = ast.literal_eval(structure_entry)
+
         new_container = ContainerStructure(structure_entry['ID'],
                                            structure_entry['Name'],
                                            structure_entry['Image'],

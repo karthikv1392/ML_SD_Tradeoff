@@ -10,7 +10,7 @@ DMON_NETWORK_TOPIC = os.getenv('DMON_NETWORK_TOPIC', 'dmon_network_out')
 DMON_STRUCTURE_TOPIC = os.getenv('DMON_STRUCTURE_TOPIC', 'dmon_structure_out')
 DMON_MERGED_TOPIC = os.getenv('DMON_MERGED_TOPIC', 'dmon_merged_out')
 
-DATABASE_USERNAME = os.getenv('DATABASE_USERNAME', 'ml_tradeoff')
+DATABASE_USERNAME = os.getenv('DATABASE_USERNAME', 'ml_sd_tradeoff')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', '65rgvc')
 DATABASE_HOST = os.getenv('DATABASE_HOST', '127.0.0.1')
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'monitoring')

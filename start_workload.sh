@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DAY_DURATION=180
-DAYS_COUNT=7  # accepts from 1 to 7
+DAY_DURATION=90
+DAYS_COUNT=1  # accepts from 1 to 7
 
 # START monitoring
 cd ./monitoring || exit 1

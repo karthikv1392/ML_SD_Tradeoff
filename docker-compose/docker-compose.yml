@@ -8,7 +8,7 @@ services:
     network_mode: "host"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    command: -i weave -n weave -t 5
+    command: -i weave -n weave -t 2
     depends_on:
       - catalogue
       - payment
@@ -51,7 +51,7 @@ services:
     restart: always
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     networks:
@@ -77,7 +77,7 @@ services:
     restart: always
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     environment:
@@ -108,7 +108,7 @@ services:
       - reschedule=on-node-failure
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     networks:
@@ -122,7 +122,7 @@ services:
     restart: always
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     environment:
@@ -152,7 +152,7 @@ services:
       - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     networks:
@@ -180,7 +180,7 @@ services:
       - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: $REPLICA_FACTOR
       placement:
         constraints: [node.role == worker]
     networks:

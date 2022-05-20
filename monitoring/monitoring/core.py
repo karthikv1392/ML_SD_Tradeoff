@@ -1,4 +1,6 @@
 import requests
+from redis.connection import SERVER_CLOSED_CONNECTION_ERROR
+
 from .config import DMON_STRUCTURE_TOPIC, DMON_NETWORK_TOPIC
 from .redis_client import init_redis_client, get_subscriber
 from loguru import logger

@@ -1,4 +1,5 @@
 import yaml
+import ast
 
 from .redis_client import init_redis_client, get_subscriber
 from .config import DMON_STRUCTURE_TOPIC
@@ -23,12 +24,27 @@ class ServiceRegistryProvider:
         # registration phase
         logger.info(f"Containers registration phase started")
         for entry in structure_sub.listen():
-            if entry is not None:
-                if entry['data'] != 1:  # skip init data
-                    # deconding and parsing bytestring
-                    result = container_registry.register_container(ContainerStructure.parse(entry['data'].decode()))
-                    if not result:
-                        break
+
+            if entry is None:
+                continue
+
+            if entry['data'] == 1:  # skip init data
+                continue
+
+            # deconding and reading bytestring
+            data = entry['data'].decode()
+            # str -> dict
+            structure_entry = ast.literal_eval(data)
+
+            # skip non container info
+            if structure_entry['SubType'] != 'container':
+                continue
+
+            result = container_registry.register_container(ContainerStructure.parse(structure_entry))
+
+            # phase ends when encountering a container already registered
+            if not result:
+                break
         logger.info(f"Containers registration completed. Found {len(container_registry.containers)} containers.")
 
         # service binding phase
