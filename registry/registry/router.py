@@ -42,6 +42,25 @@ async def get_random_instance(alias: str, registry_provider: RegistryProviderSer
             detail=f"No service found for alias {alias}",
         )
 
+@router.get('/services/{alias}/rr')
+async def get_rr_instance(alias: str, registry_provider: RegistryProviderService = Depends(get_registry_provider)):
+    """Return the next service instance by one of its service aliases with the round robin balancing"""
+
+    registry_provider = registry_provider.get_registry_provider()
+    service_registry: ServiceRegistry = registry_provider.get_registry_instance()
+
+    inspector: ServiceInspector = service_registry.retrieve_inspector_by_alias(alias)
+
+    if inspector is not None:
+        instance: ServiceInstance = inspector.get_round_robin_instance()
+
+        return {"type": inspector.name, "name": instance.name}
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No service found for alias {alias}",
+        )
+
 
 @router.get('/services/by-ip/{ip}')
 async def get_instance_by_ip(ip: str, registry_provider: RegistryProviderService = Depends(get_registry_provider)):

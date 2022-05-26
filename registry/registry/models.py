@@ -30,6 +30,7 @@ class ServiceInspector:
         self.name: str = name
         self.aliases: List[str] = aliases
         self.instances: List[ServiceInstance] = []
+        self.rr_instance_index = -1
 
     def __repr__(self):
         return f"ServiceInspector [name={self.name}, aliases={self.aliases}, instances={str(self.instances)}]"
@@ -44,11 +45,28 @@ class ServiceInspector:
             logger.debug("There aren't instances available for this service")
         return random.choice(self.instances)
 
+    def get_round_robin_instance(self) -> ServiceInstance:
+
+        # update index
+        self.rr_instance_index = self.rr_instance_index + 1
+
+        max_length = len(self.instances)
+
+        if self.rr_instance_index > max_length - 1:
+            logger.debug("Reset")
+            # reset index
+            self.rr_instance_index = 0
+
+        logger.debug(f"Index: {self.rr_instance_index}")
+
+        return self.instances[self.rr_instance_index]
+
     def get_all_instances(self) -> List[str]:
         i_list: List[str] = []
         for i in self.instances:
             i_list.append(i.name)
         return i_list
+
 
 class ServiceRegistry:
     """The ServiceRegistry class holds information about all registered services"""
@@ -134,7 +152,6 @@ class ContainerStructure:
 
     @staticmethod
     def parse(structure_entry):
-
         new_container = ContainerStructure(structure_entry['ID'],
                                            structure_entry['Name'],
                                            structure_entry['Image'],
