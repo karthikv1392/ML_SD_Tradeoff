@@ -30,3 +30,4 @@ class Workload(Base):
     ts_end = Column(DateTime)
     days_count = Column(Integer)
     day_duration = Column(Integer)
+    label = Column(String(250))

@@ -17,21 +17,22 @@ async def get_interceptor(request: Request):
     # retrieve request info
     info = {"method": request.method,
             "path": request.url.path,
-            "port": request.url.port,
-            "scheme": request.url.scheme,
             "headers": request.headers,
             "query_params": request.query_params,
-            "path_params": request.path_params,
-            "host": request.client.host,
             "body": await request.body(),
             }
 
     # RANDOM RETRIEVE
     alias: str = utils.get_alias_by_path(info['path'])
 
-    instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
+    instance_response = None
 
-    if instance_response.status_code == 404:
+    if config.LB_STRATEGY == 'rr':
+        instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}/rr")
+    elif config.LB_STRATEGY == 'random':
+        instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
+
+    if instance_response is None or instance_response.status_code == 404:
         raise HTTPException(
             status_code=404,
             detail=f"No service found for alias {alias}",
@@ -43,7 +44,7 @@ async def get_interceptor(request: Request):
 
     # redirect to provided instance
     url = f"http://{instance['name']}.weave.local{info['path']}"
-    logger.debug(url)
+    # logger.debug(url)
 
     request = requests.Request(info['method'],
                                url,
@@ -56,7 +57,7 @@ async def get_interceptor(request: Request):
 
     response = s.send(prepped)
 
-    logger.debug(response.content)
+    # logger.debug(response.content)
 
     # PING ALL INSTANCES
     # alias: str = utils.get_alias_by_path(info['path'])
@@ -93,3 +94,4 @@ async def get_interceptor(request: Request):
     #     logger.debug(response.content)
 
     return Response(content=response.content, headers=response.headers, status_code=response.status_code)
+

@@ -3,9 +3,10 @@ fastapi>=0.68.0
 pydantic>=1.8.0,<2.0.0
 uvicorn>=0.17.6
 PyYAML==6.0.0
-redis==4.3.1
+redis>=4.3.1
 SQLAlchemy==1.4.35
 docker==5.0.3
 requests~=2.27.1
 psycopg2==2.9.3
 alembic==1.7.7
+pandas~=1.4.2

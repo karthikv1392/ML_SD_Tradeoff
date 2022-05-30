@@ -1,7 +1,25 @@
 #!/bin/bash
 
-DAY_DURATION=90
-DAYS_COUNT=1  # accepts from 1 to 7
+#################################################################
+#
+# call example
+#
+# ./start_workload.sh -w ./workload/workload_1.txt -d 180 -c 1 -l rr
+#
+#################################################################
+
+
+while getopts w:d:c:l flag
+do
+    case "${flag}" in
+        w) workload_path=${OPTARG};;
+        d) day_duration=${OPTARG};;
+        c) days_count=${OPTARG};;
+        l) label=${OPTARG};;
+        *) ;;
+    esac
+done
+
 
 # START monitoring
 cd ./monitoring || exit 1
@@ -10,13 +28,13 @@ chmod +x ./terminate.sh
 
 TS_INIT=$(date  +"%Y-%m-%d %T.%6N")
 
-./run.sh
+./run.sh -m 1
 
 cd .. || exit 1
 
 # START swg
 cd ./swg || exit 1
-./bin/swg -w $1 -d $DAY_DURATION
+./bin/swg -w $workload_path -d $day_duration
 
 # STOP monitoring
 cd ../monitoring || exit 1
@@ -28,4 +46,5 @@ TS_END=$(date  +"%Y-%m-%d %T.%6N")
 redis-cli flushdb
 
 # SAVING workload metadata
-python main.py --m=save_workload --ts_init="$TS_INIT" --ts_end="$TS_END" --days_count=1 --day_duration=$DAY_DURATION
+python main.py --m=save_workload --ts_init="$TS_INIT" --ts_end="$TS_END" --days_count=$days_count --day_duration=$day_duration --label=$label
+

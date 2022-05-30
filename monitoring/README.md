@@ -1,5 +1,9 @@
 
 
-To run migrations:
+Run migrations:
 
-    1. alembic upgrade head
+    - alembic upgrade head
+
+Update tables, generating migration:
+
+    - alembic revision --autogenerate
