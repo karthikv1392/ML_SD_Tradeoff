@@ -6,15 +6,15 @@ catalogue_get_by_id;12;sec;{"id": "03fef6ac-1896-4ce8-bd69-b798f85c6e0b"}
 catalogue_size_get;12;sec;
 tags_get_all;41;sec;
 # PAYMENT
-health_get;4;sec;
-paymentauth_post;29;sec;{"authorised": true,"message": "Payment authorised"}
+health_get;44;sec;
+paymentauth_post;29;sec;{"Amount": 10}
 # USER
 customers_get_all;12;sec;
 addresses_get_all;32;sec;
-cards_get_all;9;sec;
+cards_get_all;29;sec;
 # ORDERS
-orders_get_all;12;sec;
+orders_get_all;82;sec;
 # CARTS
-cart_get_by_cust_id;8;sec;{"id":"57a98d98e4b00679b4a830b2"}
+cart_get_by_cust_id;68;sec;{"id":"57a98d98e4b00679b4a830b2"}
 # SHIPPING
-shipping_get_all;9;sec;
+shipping_get_all;99;sec;

@@ -28,7 +28,7 @@ chmod +x ./terminate.sh
 
 TS_INIT=$(date  +"%Y-%m-%d %T.%6N")
 
-./run.sh -m 1
+./run.sh -m 2
 
 cd .. || exit 1
 
