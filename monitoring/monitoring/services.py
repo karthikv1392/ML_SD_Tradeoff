@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import and_
 
-from monitoring.tables import ServiceStatus, ServiceCall, Workload
+from monitoring.tables import ServiceStatus, ServiceCall, Workload, LiveServiceStatus, LiveServiceCall
 import monitoring.db as db
 import pandas as pd
 
@@ -27,6 +27,23 @@ def store_service_call(service_call: ServiceCall):
     database.commit()
 
     database.refresh(service_call)
+
+    # logger.debug(f"Successfully added Service Call with id: {service_call.id}")
+
+
+def store_live_service_status(live_service_status: LiveServiceStatus):
+    database.add(live_service_status)
+    database.commit()
+    database.refresh(live_service_status)
+
+    # logger.debug(f"Successfully added Service Status with id: {service_status.id}")
+
+
+def store_live_service_call(live_service_call: LiveServiceCall):
+    database.add(live_service_call)
+    database.commit()
+
+    database.refresh(live_service_call)
 
     # logger.debug(f"Successfully added Service Call with id: {service_call.id}")
 
@@ -69,7 +86,7 @@ def generate_rt_csv_by_workload_id(wl_id: int, folder: str):
 
     calls = database.query(ServiceCall).filter(and_(
         ServiceCall.timestamp >= wl.ts_init), (
-        ServiceCall.timestamp <= wl.ts_end)
+            ServiceCall.timestamp <= wl.ts_end)
     )
 
     # using the query object to create the pandas dataframe
@@ -96,13 +113,44 @@ def generate_cpu_csv_by_workload_id(wl_id: int, folder: str):
     logger.debug(wl.ts_init)
     logger.debug(wl.ts_end)
 
-    calls = database.query(ServiceStatus).filter(and_(
+    statuses = database.query(ServiceStatus).filter(and_(
         ServiceStatus.timestamp >= wl.ts_init), (
-        ServiceStatus.timestamp <= wl.ts_end)
+            ServiceStatus.timestamp <= wl.ts_end)
     )
 
     # using the query object to create the pandas dataframe
-    calls_df = pd.read_sql(calls.statement, calls.session.bind)
-    calls_df.to_csv(f"{folder}/workload_{wl_id}.csv")
-    logger.debug(len(calls_df))
+    statuses_df = pd.read_sql(statuses.statement, statuses.session.bind)
+    statuses_df.to_csv(f"{folder}/workload_{wl_id}.csv")
+    logger.debug(len(statuses_df))
 
+
+def get_current_data(db, service_type: str):
+    ts_now = datetime.now()
+    ts_past = ts_now - timedelta(minutes=10)
+
+    ts_past_cpu = ts_now - timedelta(hours=1)
+
+    # fetching last ten minutes response times, given a service type
+    calls = db.query(LiveServiceCall).filter(and_(
+        LiveServiceCall.timestamp >= ts_past), (
+            LiveServiceCall.timestamp <= ts_now), (
+            LiveServiceCall.service_type == service_type)
+    )
+
+    calls_df = pd.read_sql(calls.statement, calls.session.bind)
+    #  TODO: REARRANGE DATA. IF DATA IS INSUFFICIENT PRINT ERROR
+
+    # fetching last ten minutes cpu utilizations, given a service type
+    statuses = db.query(LiveServiceStatus).filter(and_(
+        LiveServiceStatus.timestamp >= ts_past_cpu), (
+            LiveServiceStatus.timestamp <= ts_now), (
+            LiveServiceStatus.service_type == service_type)
+    )
+
+    statuses_df = pd.read_sql(statuses.statement, statuses.session.bind)
+    #  TODO: REARRANGE DATA. IF DATA IS INSUFFICIENT PRINT ERROR
+    logger.debug(statuses)
+
+    data = {'calls': calls, 'statuses': statuses}
+
+    return data

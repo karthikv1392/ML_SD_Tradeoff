@@ -12,9 +12,10 @@ router = APIRouter(
 )
 
 
-@router.get('/engines')
+@router.post('/predict')
 async def get_registry(engine_provider: EngineProviderService = Depends(get_engine_provider)):
-    """Predictions endpoint"""
+    """Predictions endpoint. Receiving a json payload of last response times and cpu utilization,
+       use the correct model to predict a service performance"""
 
     engine_provider = engine_provider.get_engine_provider()
 
