@@ -8,6 +8,7 @@ from sqlalchemy import and_
 from monitoring.tables import ServiceStatus, ServiceCall, Workload, LiveServiceStatus, LiveServiceCall
 import monitoring.db as db
 import pandas as pd
+from monitoring import utils
 
 database = next(db.get_db())
 
@@ -126,7 +127,7 @@ def generate_cpu_csv_by_workload_id(wl_id: int, folder: str):
 
 def get_current_data(db, service_type: str):
     ts_now = datetime.now()
-    ts_past = ts_now - timedelta(minutes=10)
+    ts_past = ts_now - timedelta(minutes=9)
 
     ts_past_cpu = ts_now - timedelta(hours=1)
 
@@ -138,7 +139,11 @@ def get_current_data(db, service_type: str):
     )
 
     calls_df = pd.read_sql(calls.statement, calls.session.bind)
-    #  TODO: REARRANGE DATA. IF DATA IS INSUFFICIENT PRINT ERROR
+
+    # scale
+    calls_df['time_delta'] = calls_df['time_delta'] * 1000 * 10
+
+    calls_values = utils.prepare_output(calls_df, '1T', 'service_instance')
 
     # fetching last ten minutes cpu utilizations, given a service type
     statuses = db.query(LiveServiceStatus).filter(and_(
@@ -149,8 +154,10 @@ def get_current_data(db, service_type: str):
 
     statuses_df = pd.read_sql(statuses.statement, statuses.session.bind)
     #  TODO: REARRANGE DATA. IF DATA IS INSUFFICIENT PRINT ERROR
-    logger.debug(statuses)
 
-    data = {'calls': calls, 'statuses': statuses}
+    statuses_values = utils.prepare_output(statuses_df, '20T', 'service_instance')
 
+    data = {'calls': calls_values, 'statuses': statuses_values}
+    logger.debug(data)
     return data
+
