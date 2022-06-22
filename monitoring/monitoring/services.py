@@ -127,9 +127,9 @@ def generate_cpu_csv_by_workload_id(wl_id: int, folder: str):
 
 def get_current_data(db, service_type: str):
     ts_now = datetime.now()
-    ts_past = ts_now - timedelta(minutes=9)
+    ts_past = ts_now - timedelta(minutes=10)
 
-    ts_past_cpu = ts_now - timedelta(hours=1)
+    ts_past_cpu = ts_now - timedelta(minutes=60)
 
     # fetching last ten minutes response times, given a service type
     calls = db.query(LiveServiceCall).filter(and_(
@@ -143,7 +143,7 @@ def get_current_data(db, service_type: str):
     # scale
     calls_df['time_delta'] = calls_df['time_delta'] * 1000 * 10
 
-    calls_values = utils.prepare_output(calls_df, '1T', 'service_instance')
+    calls_values = utils.prepare_output(calls_df, 10, '1T', 'service_instance')
 
     # fetching last ten minutes cpu utilizations, given a service type
     statuses = db.query(LiveServiceStatus).filter(and_(
@@ -153,11 +153,10 @@ def get_current_data(db, service_type: str):
     )
 
     statuses_df = pd.read_sql(statuses.statement, statuses.session.bind)
-    #  TODO: REARRANGE DATA. IF DATA IS INSUFFICIENT PRINT ERROR
 
-    statuses_values = utils.prepare_output(statuses_df, '20T', 'service_instance')
+    statuses_values = utils.prepare_output(statuses_df, 3, '20T', 'service_instance')
 
     data = {'calls': calls_values, 'statuses': statuses_values}
-    logger.debug(data)
+
     return data
 

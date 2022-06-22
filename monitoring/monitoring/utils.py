@@ -1,22 +1,28 @@
 import pandas as pd
+from fastapi import HTTPException
 from loguru import logger
 import numpy as np
 
 
-def prepare_output(df, interval='1T', column='service_instance'):
+def prepare_output(df, n_rows, interval='1T', column='service_instance'):
     """It ensures that data is ready for prediction"""
 
     df.set_index(pd.to_datetime(df['timestamp']), inplace=True)
 
+    logger.debug(f"Min: {df['timestamp'].min()}")
+    logger.debug(f"Max: {df['timestamp'].max()}")
+
     df = df.iloc[:, 1:]
 
-    logger.debug(df.head())
     df = aggregate_df(df, interval, column)
-    logger.debug(df.head())
     logger.debug(f"Df shape after aggregation: {df.shape}")
+
     # check missing value
     if not is_df_admissible(df, 40):
         return
+
+    # check shape
+    df = adjust_shape(df, n_rows)
 
     df = interpolate_missing_values(df, 'linear')
 
@@ -57,5 +63,23 @@ def is_df_admissible(df, accepted_error=50) -> bool:
 def interpolate_missing_values(df, method='linear'):
     for column in df:
         df[column] = df[column].interpolate(method=method).ffill().bfill()
+
+    return df
+
+
+def adjust_shape(df, n_rows):
+    # longer than requested
+    if df.shape[0] > n_rows:
+        logger.debug(f"Adjusting size from {df.shape[0]} to {n_rows}")
+        # df = df.tail(n_rows)
+        df = df.iloc[-n_rows:]
+
+    # shorter than requested
+    if df.shape[0] < n_rows:
+        logger.error(f"Dataframe has {df.shape[0]} rows. Minimum is {n_rows}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Not enough current data is available.",
+        )
 
     return df
