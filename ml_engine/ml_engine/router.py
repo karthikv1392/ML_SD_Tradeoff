@@ -1,8 +1,8 @@
-from typing import Dict
-
 import requests
+import json
+
 from loguru import logger
-from fastapi import APIRouter, Request, Response, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from ml_engine import config
 from ml_engine.services import EngineProviderService
@@ -29,5 +29,8 @@ async def get_registry(service_type: str, engine_provider: EngineProviderService
 
     data = monitoring_response.json()
     logger.debug(data)
-    engine_provider.predict(service_type, data)
-    return 'Pippo'
+    data = engine_provider.predict(service_type, data)
+
+    data['pred_rt'] = json.dumps(data['pred_rt'].tolist())
+    data['pred_cpu'] = json.dumps(data['pred_cpu'].tolist())
+    return data
