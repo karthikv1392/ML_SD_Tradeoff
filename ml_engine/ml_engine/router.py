@@ -4,7 +4,7 @@ import json
 from loguru import logger
 from fastapi import APIRouter, Depends
 
-from ml_engine import config
+import config
 from ml_engine.services import EngineProviderService
 from ml_engine.app_services import get_engine_provider
 

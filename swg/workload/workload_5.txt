@@ -3,18 +3,18 @@
 # CATALOGUE
 catalogue_get_all;17;sec;
 catalogue_get_by_id;12;sec;{"id": "03fef6ac-1896-4ce8-bd69-b798f85c6e0b"}
-catalogue_size_get;37;sec;
+catalogue_size_get;17;sec;
 tags_get_all;16;sec;
 # PAYMENT
 health_get;11;sec;
-paymentauth_post;67;sec;{"Amount": 10}
+paymentauth_post;47;sec;{"Amount": 10}
 # USER
 customers_get_all;25;sec;
 addresses_get_all;35;sec;
-cards_get_all;11;sec;
+cards_get_all;5;sec;
 # ORDERS
-orders_get_all;73;sec;
+orders_get_all;63;sec;
 # CARTS
-cart_get_by_cust_id;60;sec;{"id":"57a98d98e4b00679b4a830b2"}
+cart_get_by_cust_id;55;sec;{"id":"57a98d98e4b00679b4a830b2"}
 # SHIPPING
 shipping_get_all;62;sec;

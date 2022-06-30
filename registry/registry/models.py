@@ -97,6 +97,13 @@ class ServiceRegistry:
                     return inspector
         logger.debug(f"No inspectors found for alias {alias}")
 
+    def retrieve_inspector_by_type(self, type: str) -> ServiceInspector or None:
+        """Query the registry for a matching type"""
+        for inspector in self.inspectors:
+            if type == inspector.name:
+                return inspector
+        logger.debug(f"No inspectors found for type {type}")
+
     def check_unique_alias(self, aliases: List[str]) -> bool:
         """Checks if there arleady is an inspector for a new alias. In that case the inspector cannot be registered"""
         for new_alias in aliases:
