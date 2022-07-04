@@ -1,5 +1,5 @@
 from typing import List, Dict
-from state import SelectionState
+from model import SelectionState
 from loguru import logger
 
 
@@ -27,14 +27,12 @@ class SelectionWorld:
 
     def init_rewards(self) -> Dict[SelectionState, float]:
         """Initalize the rewards table"""
-        # TODO
-        rewards: Dict[(str, str, str), float] = {}
+        rewards: Dict[SelectionState, float] = {}
 
         for state in [(rt_c, cpu_c, i) for rt_c in self.rt_categories for cpu_c in self.cpu_categories
                       for i in self.available_instances]:
-            s = SelectionState(state[0], state[1], state[2])
-            rewards[s] = 0
 
-            # TODO: REWARDS TUNING BASED ON CATEGORIES VALUES
+            # TODO: here define the rules for rewards, based on ranking values
+            rewards[state] = 0
 
         return rewards
