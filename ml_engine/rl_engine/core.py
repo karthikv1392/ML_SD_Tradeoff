@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Dict, List
 
 from world import SelectionWorld
@@ -72,11 +71,9 @@ class SelectionEngine:
         return self.world.actions[max_index]
 
     def data_to_states(self, curr_data: CurrentData) -> List[SelectionState]:
-        pred_rt = np.array(ast.literal_eval(curr_data['pred_rt']))
-        pred_cpu = np.array(ast.literal_eval(curr_data['pred_cpu']))
 
-        pred_rt = utils.normalize(pred_rt).reshape(5)
-        pred_cpu = utils.normalize(pred_cpu).reshape(5)
+        pred_rt = utils.normalize(curr_data.rt_values).reshape(5)
+        pred_cpu = utils.normalize(curr_data.cpu_values).reshape(5)
 
         curr_states: List[SelectionState] = []
 
@@ -119,12 +116,16 @@ if __name__ == "__main__":
 
     selection_engine = SelectionEngine(service_type, world)
 
-    # TODO: call predictor
-    test_data = {
+    raw_test_data = {
         "key": "catalogue",
         "pred_rt": "[[118.9261474609375, 238.39471435546875, 99.03601837158203, 56.91542053222656, 127.10435485839844]]",
         "pred_cpu": "[[0.184543177485466, 0.18001843988895416, 0.07000000029802322, 0.16921639442443848, 0.3747855842113495]]"
     }
 
-    logger.debug(selection_engine.select_action(test_data))
-    logger.debug(selection_engine.select_action(test_data))
+    # TODO: call predictor
+    test_data = CurrentData(raw_test_data["key"],
+                            np.array(ast.literal_eval(raw_test_data['pred_rt'])),
+                            np.array(ast.literal_eval(raw_test_data['pred_cpu'])))
+
+    for i in range(5):
+        logger.debug(selection_engine.select_action(test_data))

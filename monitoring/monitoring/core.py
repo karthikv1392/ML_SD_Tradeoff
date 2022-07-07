@@ -12,7 +12,6 @@ import monitoring.services as services
 from datetime import datetime, timedelta
 
 
-
 def extract_call(data, live=False):
     if data["Protocol"] != "HTTP/JSON" and data["Protocol"] != "HTTP":
         return

@@ -1,7 +1,10 @@
 import pandas as pd
 from fastapi import HTTPException
 from loguru import logger
+from datetime import datetime
 import numpy as np
+
+ts_format = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def prepare_output(df, n_rows, interval='1T', column='service_instance'):
@@ -83,3 +86,16 @@ def adjust_shape(df, n_rows):
         )
 
     return df
+
+
+def read_timestamp(str_ts):
+    logger.debug(str_ts)
+    try:
+        ts_init = datetime.strptime(str_ts, ts_format)
+        return ts_init
+    except ValueError:
+        logger.error(f"Provide a timestamp in valid format: {ts_format}. You provided: {str_ts}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Provide a timestamp in valid format: {ts_format}. You provided: {str_ts}"
+        )

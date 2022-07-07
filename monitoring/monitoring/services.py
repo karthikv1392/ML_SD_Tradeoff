@@ -6,13 +6,14 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_
 
 from monitoring.tables import ServiceStatus, ServiceCall, Workload, LiveServiceStatus, LiveServiceCall
+from monitoring import utils
 import monitoring.db as db
 import pandas as pd
 from monitoring import utils
 
 database = next(db.get_db())
 
-ts_format = '%Y-%m-%d %H:%M:%S.%f'
+ts_format = utils.ts_format
 
 
 def store_service_status(service_status: ServiceStatus):
@@ -160,3 +161,15 @@ def get_current_data(db, service_type: str):
 
     return data
 
+
+def get_closest_entry(db, instance: str, timestamp: datetime):
+    # todo: query
+    call = db.query(LiveServiceCall).filter(and_(
+        LiveServiceCall.service_instance == instance), (
+        LiveServiceCall.timestamp > timestamp)).order_by(LiveServiceCall.timestamp.asc()).limit(1).all()
+
+    status = db.query(LiveServiceStatus).filter(and_(
+        LiveServiceStatus.service_instance == instance), (
+        LiveServiceStatus.timestamp > timestamp)).order_by(LiveServiceStatus.timestamp.asc()).limit(1).all()
+    
+    return {"rt": call[0].time_delta*1000*10, "cpu": status[0].cpu_perc}
