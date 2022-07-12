@@ -171,5 +171,7 @@ def get_closest_entry(db, instance: str, timestamp: datetime):
     status = db.query(LiveServiceStatus).filter(and_(
         LiveServiceStatus.service_instance == instance), (
         LiveServiceStatus.timestamp > timestamp)).order_by(LiveServiceStatus.timestamp.asc()).limit(1).all()
-    
+
+    logger.debug(call)
+    logger.debug(status)
     return {"rt": call[0].time_delta*1000*10, "cpu": status[0].cpu_perc}

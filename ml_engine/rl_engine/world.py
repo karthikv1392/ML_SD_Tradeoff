@@ -1,5 +1,5 @@
 from typing import List, Dict
-from model import SelectionState
+from rl_engine.model import SelectionState
 from loguru import logger
 
 

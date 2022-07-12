@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from loguru import logger
+from rl_engine import config
+from ml_engine.core import PredictionEngine
+from rl_engine.core import SelectionEngineRegistry
 
-from ml_engine.core import EngineProvider
+logger.debug("app, initializing selection engine")
+selection_engine_registry = SelectionEngineRegistry(config.services)
 
-# init containers inspection
-logger.debug("app, initializing registry_provider")
-engine_provider = EngineProvider()
+logger.debug("app, initializing prediction engine")
+prediction_engine = PredictionEngine()
+
 
 from ml_engine.router import router as main_router
 

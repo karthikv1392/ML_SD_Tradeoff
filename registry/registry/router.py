@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, Response, Depends, HTTPException
 from registry.app_services import get_registry_provider
 from registry.models import ServiceRegistry, ServiceInspector, ServiceInstance
 from registry.services import RegistryProviderService
+from registry import services
 
 router = APIRouter(
     tags=['registry'],
@@ -42,6 +43,7 @@ async def get_random_instance(alias: str, registry_provider: RegistryProviderSer
             detail=f"No service found for alias {alias}",
         )
 
+
 @router.get('/services/{alias}/rr')
 async def get_rr_instance(alias: str, registry_provider: RegistryProviderService = Depends(get_registry_provider)):
     """Return the next service instance by one of its service aliases with the round robin balancing"""
@@ -60,6 +62,25 @@ async def get_rr_instance(alias: str, registry_provider: RegistryProviderService
             status_code=404,
             detail=f"No service found for alias {alias}",
         )
+
+
+@router.get('/services/{alias}/tradeoff')
+async def get_tradeoff_instance(alias: str, registry_provider: RegistryProviderService = Depends(get_registry_provider)):
+    """Return the next service instance by one of its service aliases with the tradeoff balancing"""
+
+    registry_provider = registry_provider.get_registry_provider()
+    service_registry: ServiceRegistry = registry_provider.get_registry_instance()
+
+    inspector: ServiceInspector = service_registry.retrieve_inspector_by_alias(alias)
+
+    if inspector is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No service found for alias {alias}",
+        )
+
+    instance = services.get_tradeoff_instance(inspector.name)
+    return instance
 
 
 @router.get('/services/by-ip/{ip}')

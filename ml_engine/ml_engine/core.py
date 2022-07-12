@@ -5,7 +5,7 @@ import numpy as np
 import ast
 
 
-class EngineProvider:
+class PredictionEngine:
     def __init__(self):
         # TODO: check files and load models
         self.keys = ['catalogue', 'carts', 'shipping', 'user', 'orders', 'payment']

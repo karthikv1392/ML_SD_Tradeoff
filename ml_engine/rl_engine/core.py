@@ -1,14 +1,34 @@
+from time import sleep
 from typing import Dict, List
 
-from world import SelectionWorld
-from model import SelectionState, CurrentData
+from rl_engine.world import SelectionWorld
+from rl_engine.model import SelectionState, CurrentData
 from loguru import logger
 
-import config
+import rl_engine.services as services
+import rl_engine.utils as utils
+
 import ast
-import requests
 import numpy as np
-import utils
+
+
+class SelectionEngineRegistry:
+    """Registry of the available SelectionEngine"""
+    def __init__(self, service_types: List[str]):
+        self.selection_engines = {}
+        self.rt_categories = ['LOW', 'MED', 'HI']
+        self.cpu_categories = ['LOW', 'MED', 'HI']
+
+        for s in service_types:
+            available_instances = services.get_available_instances(s)
+
+            selection_world = SelectionWorld(available_instances, self.rt_categories, self.cpu_categories)
+            selection_engine = SelectionEngine(s, selection_world)
+
+            self.selection_engines[s] = selection_engine
+
+    def get_selection_enine(self, service_type):
+        return self.selection_engines[service_type]
 
 
 class SelectionEngine:
@@ -68,7 +88,16 @@ class SelectionEngine:
         max_index = q_values.argmax()
         logger.debug(max_index)
         logger.debug(self.world.actions)
-        return self.world.actions[max_index]
+
+        selected_action = self.world.actions[max_index]
+
+        self.post_action(selected_action)
+        return selected_action
+
+    def post_action(self, instance):
+        """Retrieves live data in order to update the reward table with proper values"""
+        data = services.get_current_entry(instance)
+        logger.debug(data)
 
     def data_to_states(self, curr_data: CurrentData) -> List[SelectionState]:
 
@@ -102,15 +131,7 @@ if __name__ == "__main__":
 
     service_type = "catalogue"
 
-    available_instances_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{service_type}/all")
-
-    if available_instances_response.status_code != 200:
-        logger.error(f"No instances found for type {type}")
-
-    available_instances = available_instances_response.json()
-    available_instances.sort()
-
-    logger.debug(available_instances)
+    available_instances = services.get_available_instances(service_type)
 
     world = SelectionWorld(available_instances, ['LOW', 'MED', 'HI'], ['LOW', 'MED', 'HI'])
 
@@ -129,3 +150,4 @@ if __name__ == "__main__":
 
     for i in range(5):
         logger.debug(selection_engine.select_action(test_data))
+        sleep(1)
