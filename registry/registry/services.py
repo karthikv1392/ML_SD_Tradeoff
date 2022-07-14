@@ -16,7 +16,7 @@ class RegistryProviderService:
 
 
 def get_tradeoff_instance(service_type: str) -> str:
-    tradeoff_instance_response = requests.get(f"http://{config.ML_ENGINE_HOST}/selection/{service_type}")
+    tradeoff_instance_response = requests.get(f"http://{config.ML_ENGINE_HOST}/select/{service_type}")
 
     logger.debug(tradeoff_instance_response)
     tradeoff_instance = tradeoff_instance_response.json()

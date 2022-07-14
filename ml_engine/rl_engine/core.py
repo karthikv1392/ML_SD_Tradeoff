@@ -27,7 +27,7 @@ class SelectionEngineRegistry:
 
             self.selection_engines[s] = selection_engine
 
-    def get_selection_enine(self, service_type):
+    def get_selection_engine(self, service_type):
         return self.selection_engines[service_type]
 
 
@@ -83,21 +83,24 @@ class SelectionEngine:
 
     def max_action(self, curr_states: List[SelectionState]) -> str:
         """Queries the q-table to extract the current best action, given the current state"""
-
         q_values = np.array([self.q_table[(self.state, s.instance)] for s in curr_states], dtype=float)
         max_index = q_values.argmax()
         logger.debug(max_index)
         logger.debug(self.world.actions)
 
         selected_action = self.world.actions[max_index]
+        selected_state = curr_states[max_index]
 
-        self.post_action(selected_action)
+        self.state = selected_state
+
         return selected_action
 
     def post_action(self, instance):
         """Retrieves live data in order to update the reward table with proper values"""
+        logger.debug(f"Current state: {self.state}")
         data = services.get_current_entry(instance)
-        logger.debug(data)
+
+        logger.debug(f"Current data: {data}")
 
     def data_to_states(self, curr_data: CurrentData) -> List[SelectionState]:
 

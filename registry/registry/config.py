@@ -16,4 +16,4 @@ DATABASE_HOST = os.getenv('DATABASE_HOST', '127.0.0.1')
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'monitoring')
 TEST_DATABASE_NAME = os.getenv('TEST_DATABASE_NAME', 'test_sm')
 
-ML_ENGINE_HOST = os.getenv('ML_ENGINE_HOST', 'localhost:8002')
+ML_ENGINE_HOST = os.getenv('ML_ENGINE_HOST', '172.17.0.1:8002')

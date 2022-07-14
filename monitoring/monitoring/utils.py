@@ -85,6 +85,7 @@ def adjust_shape(df, n_rows):
             detail=f"Not enough current data is available.",
         )
 
+
     return df
 
 

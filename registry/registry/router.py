@@ -7,6 +7,7 @@ from registry.app_services import get_registry_provider
 from registry.models import ServiceRegistry, ServiceInspector, ServiceInstance
 from registry.services import RegistryProviderService
 from registry import services
+from registry import config
 
 router = APIRouter(
     tags=['registry'],
@@ -73,6 +74,7 @@ async def get_tradeoff_instance(alias: str, registry_provider: RegistryProviderS
 
     inspector: ServiceInspector = service_registry.retrieve_inspector_by_alias(alias)
 
+    logger.debug(f"ML engine endpoint: {config.ML_ENGINE_HOST}")
     if inspector is None:
         raise HTTPException(
             status_code=404,

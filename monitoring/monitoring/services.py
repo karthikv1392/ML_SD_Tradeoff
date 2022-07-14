@@ -164,14 +164,42 @@ def get_current_data(db, service_type: str):
 
 def get_closest_entry(db, instance: str, timestamp: datetime):
     # todo: query
-    call = db.query(LiveServiceCall).filter(and_(
-        LiveServiceCall.service_instance == instance), (
-        LiveServiceCall.timestamp > timestamp)).order_by(LiveServiceCall.timestamp.asc()).limit(1).all()
+    timestamp_tmp = timestamp
+    i = 1
 
-    status = db.query(LiveServiceStatus).filter(and_(
-        LiveServiceStatus.service_instance == instance), (
-        LiveServiceStatus.timestamp > timestamp)).order_by(LiveServiceStatus.timestamp.asc()).limit(1).all()
+    while True:
+        logger.debug(i)
+        call = perform_call_search(db, instance, timestamp_tmp)
+        if len(call) > 0:
+            break
+        timestamp_tmp = timestamp_tmp - timedelta(seconds=i)
+        i = i + 1
+
+    timestamp_tmp = timestamp
+    i = 1
+
+    while True:
+        logger.debug(i)
+        status = perform_status_search(db, instance, timestamp_tmp)
+        if len(status) > 0:
+            break
+        timestamp_tmp = timestamp_tmp - timedelta(seconds=i)
+        i = i + 1
 
     logger.debug(call)
     logger.debug(status)
     return {"rt": call[0].time_delta*1000*10, "cpu": status[0].cpu_perc}
+
+
+def perform_call_search(db, instance: str, timestamp: datetime):
+    call = db.query(LiveServiceCall).filter(and_(
+        LiveServiceCall.service_instance == instance), (
+            LiveServiceCall.timestamp > timestamp)).order_by(LiveServiceCall.timestamp.asc()).limit(1).all()
+    return call
+
+
+def perform_status_search(db, instance: str, timestamp: datetime):
+    status = db.query(LiveServiceStatus).filter(and_(
+        LiveServiceStatus.service_instance == instance), (
+            LiveServiceStatus.timestamp > timestamp)).order_by(LiveServiceStatus.timestamp.asc()).limit(1).all()
+    return status

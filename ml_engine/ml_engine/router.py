@@ -2,7 +2,7 @@ import requests
 import json
 
 from loguru import logger
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 
 from rl_engine import config
 from ml_engine.services import PredictionEngineProvider, SelectionEngineRegistryProvider
@@ -44,15 +44,18 @@ async def get_predictions(service_type: str, prediction_engine_provider: Predict
 
 @router.get('/select/{service_type}')
 async def get_selection(service_type: str,
+                        background_tasks: BackgroundTasks,
                         prediction_engine_provider: PredictionEngineProvider = Depends(get_prediction_engine_provider),
                         selection_engine_registry_provider: SelectionEngineRegistryProvider = Depends(
-                            get_selection_engine_registry_provider)):
+                            get_selection_engine_registry_provider),
+
+                        ):
     """Queries the selection engine to retrieve the best next instance, after inspecting the current
        predictions and q_values"""
     prediction_engine = prediction_engine_provider.get_prediction_engine()
     selection_engine_registry = selection_engine_registry_provider.get_selection_engine_registry()
 
-    selection_engine = selection_engine_registry.get_selection_enine(service_type)
+    selection_engine = selection_engine_registry.get_selection_engine(service_type)
 
     # TODO: retrieve predictions
     predictions = services.get_predictions(service_type, prediction_engine)
@@ -61,4 +64,5 @@ async def get_selection(service_type: str,
     curr_predicted_data = CurrentData(predictions["key"], np.array(ast.literal_eval(predictions['pred_rt'])), np.array(ast.literal_eval(predictions['pred_cpu'])))
     instance = selection_engine.select_action(curr_predicted_data)
 
+    background_tasks.add_task(selection_engine.post_action, instance)
     return instance
