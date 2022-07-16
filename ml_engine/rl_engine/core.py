@@ -1,6 +1,8 @@
 from time import sleep
 from typing import Dict, List
+from fastapi import BackgroundTasks
 
+from ml_engine.core import PredictionEngine
 from rl_engine.world import SelectionWorld
 from rl_engine.model import SelectionState, CurrentData
 from loguru import logger
@@ -14,6 +16,7 @@ import numpy as np
 
 class SelectionEngineRegistry:
     """Registry of the available SelectionEngine"""
+
     def __init__(self, service_types: List[str]):
         self.selection_engines = {}
         self.rt_categories = ['LOW', 'MED', 'HI']
@@ -62,9 +65,10 @@ class SelectionEngine:
                 q_table[(state, action)] = 0
         return q_table
 
-    def select_action(self, curr_data: CurrentData):
+    def select_action(self, curr_data: CurrentData, prediction_engine: PredictionEngine,
+                      background_tasks: BackgroundTasks):
         """Given the current ranking, select the best instance using the q-table"""
-        curr_states = self.data_to_states(curr_data)
+        curr_states = self.data_to_states(curr_data, prediction_engine)
 
         if self.state is None:
             action = np.random.choice(self.world.actions)
@@ -78,31 +82,73 @@ class SelectionEngine:
 
             return action
         else:
-            action = self.max_action(curr_states)
-            return action
+            max_action, max_value, selected_state = self.max_action(curr_states)
+            background_tasks.add_task(self.post_action, max_action, max_value, selected_state, curr_data)
 
-    def max_action(self, curr_states: List[SelectionState]) -> str:
+            return max_action
+
+    def max_action(self, curr_states: List[SelectionState]) -> (str, float, SelectionState):
         """Queries the q-table to extract the current best action, given the current state"""
         q_values = np.array([self.q_table[(self.state, s.instance)] for s in curr_states], dtype=float)
         max_index = q_values.argmax()
-        logger.debug(max_index)
-        logger.debug(self.world.actions)
+        max_value = q_values.max()
 
-        selected_action = self.world.actions[max_index]
+        logger.debug(f"max_action - max_index: {max_index}")
+
+        max_action = self.world.actions[max_index]
         selected_state = curr_states[max_index]
 
         self.state = selected_state
 
-        return selected_action
+        return max_action, max_value, selected_state
 
-    def post_action(self, instance):
+    def post_action(self, max_action: str, max_value: float, new_state: SelectionState, curr_data: CurrentData):
         """Retrieves live data in order to update the reward table with proper values"""
-        logger.debug(f"Current state: {self.state}")
-        data = services.get_current_entry(instance)
+        logger.debug(f"post_action - current state: {self.state}")
+        data = services.get_current_entry(max_action)
 
-        logger.debug(f"Current data: {data}")
+        logger.debug(f"post_action - current data: {data}")
 
-    def data_to_states(self, curr_data: CurrentData) -> List[SelectionState]:
+        # TODO: update q_table
+        rt, cpu = float(data['rt']), float(data['cpu'])
+
+        rt_array = np.concatenate([curr_data.rt_values.reshape(5), np.array([rt])])
+        cpu_array = np.concatenate([curr_data.cpu_values.reshape(5), np.array([cpu])])
+
+        rt_array = utils.normalize(rt_array)
+        cpu_array = utils.normalize(cpu_array)
+
+        curr_rt = rt_array[-1]
+        curr_cpu = cpu_array[-1]
+
+        logger.debug(f"post_action - {curr_rt}")
+        logger.debug(f"post_action - {curr_cpu}")
+
+        if curr_rt < 0.4:
+            rt_category = 'LOW'
+        elif curr_rt < 0.6:
+            rt_category = 'MED'
+        else:
+            rt_category = 'HI'
+
+        if curr_cpu < 0.4:
+            cpu_category = 'LOW'
+        elif curr_cpu < 0.6:
+            cpu_category = 'MED'
+        else:
+            cpu_category = 'HI'
+
+        if rt_category == new_state.rt_category:
+            reward = 1
+
+        # delta = reward(next_state) + discount * q_table(next_state, next_action) - q_table(past_state, past_action)
+        # q_table(next_state, next_action) += learning_rate * delta
+
+    def give_reward(self, state):
+        # prediction vs real value and calculate a reward
+        pass
+
+    def data_to_states(self, curr_data: CurrentData, prediction_engine: PredictionEngine) -> List[SelectionState]:
 
         pred_rt = utils.normalize(curr_data.rt_values).reshape(5)
         pred_cpu = utils.normalize(curr_data.cpu_values).reshape(5)
@@ -126,7 +172,7 @@ class SelectionEngine:
 
             state = SelectionState(rt_category, cpu_category, a)
             curr_states.append(state)
-
+        logger.debug(f"Current '{self.service_type}' instances data: {curr_states}")
         return curr_states
 
 

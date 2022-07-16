@@ -32,7 +32,25 @@ services:
     depends_on:
       - registry
     environment:
+      - LB_STRATEGY=rr # rr | random | tradeoff
+  apigateway_tradeoff:
+    build: ../apigateway
+    hostname: apigateway_tradeoff
+    restart: always
+    dns: 172.17.0.1
+    dns_search: weave.local
+    volumes:
+      - .:/app
+    ports:
+      - "8004:8004"
+    networks:
+      - monitoring
+      - internal
+    depends_on:
+      - registry
+    environment:
       - LB_STRATEGY=tradeoff # rr | random | tradeoff
+      - PORT=8004
   registry:
     build: ../registry
     hostname: registry

@@ -62,7 +62,6 @@ async def get_selection(service_type: str,
 
     # TODO: do selection
     curr_predicted_data = CurrentData(predictions["key"], np.array(ast.literal_eval(predictions['pred_rt'])), np.array(ast.literal_eval(predictions['pred_cpu'])))
-    instance = selection_engine.select_action(curr_predicted_data)
+    instance = selection_engine.select_action(curr_predicted_data, prediction_engine, background_tasks)
 
-    background_tasks.add_task(selection_engine.post_action, instance)
     return instance

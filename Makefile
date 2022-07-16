@@ -77,7 +77,7 @@ run: check
 	echo "BUILD: docker-compose build $(MAIN_COMPOSE)"
 	docker-compose -f "$(MAIN_COMPOSE)" build -q
 	echo "START: docker-compose up $(MAIN_COMPOSE)"
-	docker-compose -f "$(MAIN_COMPOSE)" up -d
+	docker-compose -f "$(MAIN_COMPOSE)" up 
 
 .SILENT: stop
 .PHONY: stop

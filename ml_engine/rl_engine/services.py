@@ -21,12 +21,10 @@ def get_available_instances(service_type: str) -> List[str]:
 
 def get_current_entry(instance: str):
     params = {"timestamp": str(datetime.today())}
-    logger.debug(params)
 
     current_entry_response = requests.get(f"http://{config.MONITORING_HOST}/data/single/{instance}", params=params)
 
-    logger.debug(current_entry_response)
+    logger.debug(f"Monitoring single current data response: {current_entry_response}")
     current_entry_value = current_entry_response.json()
-    logger.debug(current_entry_value)
 
     return current_entry_value

@@ -72,9 +72,6 @@ class PredictionEngine:
         rt_array = np.array(ast.literal_eval(payload['calls']))
         cpu_array = np.array(ast.literal_eval(payload['statuses']))
 
-        logger.debug(rt_array.shape)
-        logger.debug(cpu_array.shape)
-
         rt_array = rt_array.reshape(1, 10, 5)
         cpu_array = cpu_array.reshape(1, 3, 5)
 
@@ -83,16 +80,13 @@ class PredictionEngine:
         pred_rt = model_rt.predict(rt_array)
         pred_cpu = model_cpu.predict(cpu_array)
 
-        logger.debug(pred_rt)
-        logger.debug(pred_cpu)
-
         # INVERSE SCALING PREDICTION
 
         pred_rt_inv = scaler_rt.inverse_transform(pred_rt)
         pred_cpu_inv = scaler_cpu.inverse_transform(pred_cpu)
 
-        logger.debug(pred_rt_inv)
-        logger.debug(pred_cpu_inv)
+        logger.debug(f"rt predictions: {pred_rt_inv}")
+        logger.debug(f"cpu predictions: {pred_cpu_inv}")
 
         # RETURN RESULT
         data = {'key': key,

@@ -82,7 +82,7 @@ async def get_tradeoff_instance(alias: str, registry_provider: RegistryProviderS
         )
 
     instance = services.get_tradeoff_instance(inspector.name)
-    return instance
+    return {"type": inspector.name, "name": instance}
 
 
 @router.get('/services/by-ip/{ip}')

@@ -32,7 +32,8 @@ async def get_interceptor(request: Request):
     elif config.LB_STRATEGY == 'random':
         instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}")
     elif config.LB_STRATEGY == 'tradeoff':
-        instance_response = requests
+        instance_response = requests.get(f"http://{config.REGISTRY_HOST}/services/{alias}/tradeoff")
+
     if instance_response is None or instance_response.status_code == 404:
         raise HTTPException(
             status_code=404,
