@@ -34,7 +34,7 @@ cd .. || exit 1
 
 # START swg
 cd ./swg || exit 1
-./bin/swg -w $workload_path -d $day_duration
+./bin/swg -w $workload_path -d $day_duration -t http://localhost:8004
 
 # STOP monitoring
 cd ../monitoring || exit 1

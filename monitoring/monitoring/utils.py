@@ -21,8 +21,8 @@ def prepare_output(df, n_rows, interval='1T', column='service_instance'):
     logger.debug(f"Df shape after aggregation: {df.shape}")
 
     # check missing value
-    if not is_df_admissible(df, 40):
-        return
+    # if not is_df_admissible(df, 40):
+    #     return
 
     # check shape
     df = adjust_shape(df, n_rows)
@@ -30,8 +30,8 @@ def prepare_output(df, n_rows, interval='1T', column='service_instance'):
     df = interpolate_missing_values(df, 'linear')
 
     # check again
-    if not is_df_admissible(df, 40):
-        return
+    # if not is_df_admissible(df, 40):
+    #     return
 
     logger.debug(f"Output shape: {df.values.shape}")
 
@@ -84,7 +84,6 @@ def adjust_shape(df, n_rows):
             status_code=404,
             detail=f"Not enough current data is available.",
         )
-
 
     return df
 

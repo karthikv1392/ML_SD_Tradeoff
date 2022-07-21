@@ -7,7 +7,7 @@ class SelectionWorld:
     """The world in which the SelectionAgent moves between different stases.
        Here we define the world dimensions, how the world can be explored and its limits."""
 
-    def __init__(self, available_instances: List[str], rt_categories: List[str], cpu_categories: List[str]):
+    def __init__(self, available_instances: List[str], rt_categories: List[int], cpu_categories: List[int]):
         self.available_instances = available_instances
         self.rt_categories = rt_categories
         self.cpu_categories = cpu_categories

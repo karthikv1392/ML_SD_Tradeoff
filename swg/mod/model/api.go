@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-var SitePrefix string = "http://localhost:8000"
+var SitePrefix string 
+
+func SetTargetUrl(targetUrl string) {
+	SitePrefix = targetUrl
+}
 
 type API struct {
 	RelativeUrl  string

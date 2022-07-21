@@ -4,7 +4,7 @@ d=480
 label="rr"
 rest=60
 
-./start_workload.sh -w ./work\load/workload_1.txt -d $d -c 1 -l $label
+./start_workload.sh -w ./workload/workload_1.txt -d $d -c 1 -l $label
 sleep $rest
 
 ./start_workload.sh -w ./workload/workload_2.txt -d $d -c 1 -l $label

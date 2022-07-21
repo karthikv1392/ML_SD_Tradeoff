@@ -33,3 +33,4 @@ async def get_closest_entry(instance: str, timestamp: str, database: Session = D
     timestamp = utils.read_timestamp(timestamp)
     call = services.get_closest_entry(database, instance, timestamp)
     return call
+
