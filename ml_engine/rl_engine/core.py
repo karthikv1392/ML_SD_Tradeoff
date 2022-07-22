@@ -43,7 +43,7 @@ class SelectionEngine:
                  epsilon: float = 0.2,
                  adaptive_epsilon: bool = False):
 
-        self.log_file = f"rl_engine/logs/{service_type}.json"
+        self.log_file = f"rl_engine/logs/{service_type}.log"
         logger.debug(os.getcwd())
         open(self.log_file, 'w')
         self.service_type = service_type  # key for the service kind
@@ -70,16 +70,19 @@ class SelectionEngine:
     def select_action(self, curr_data: CurrentData,
                       background_tasks: BackgroundTasks):
         """Given the current ranking, select the best instance using the q-table"""
-        curr_states = self.data_to_states(curr_data)
 
         # Explore a random state
-        if np.random.uniform(0, 1) < self.epsilon:
+        if np.random.uniform(0, 1) < self.epsilon and self.state is not None:
             max_action = np.random.choice(self.world.actions)
-            new_state = SelectionState(self.state.rt_category, self.state.cpu_category, max_action)
+            new_state = SelectionState(np.random.choice(QoSCategory.get_categories()),
+                                       np.random.choice(QoSCategory.get_categories()), max_action)
             logger.debug(f"Esploring new states (epsilon value): {self.state}")
+            max_index = None
         # Select maximizing state
         else:
-            max_action, new_state = self.max_action(curr_states)
+            curr_states = self.data_to_states(curr_data)
+            logger.debug(f"Current states predictions: {curr_states}")
+            max_index, max_action, new_state = self.max_action(curr_states)
 
         # initialize first state and action selected
         if self.state is None:
@@ -87,7 +90,7 @@ class SelectionEngine:
         if self.action is None:
             self.action = max_action
 
-        background_tasks.add_task(self.post_action, max_action, new_state, self.action, self.state, curr_data)
+        background_tasks.add_task(self.post_action, max_action, new_state, self.action, self.state, curr_data, max_index)
 
         self.state = new_state
         self.action = max_action
@@ -107,10 +110,10 @@ class SelectionEngine:
 
         logger.debug(f"max_action - new state is: {new_state}")
 
-        return max_action, new_state
+        return max_index, max_action, new_state
 
     def post_action(self, max_action: str, new_state: SelectionState,
-                    old_action: str, old_state: SelectionState, curr_data: CurrentData):
+                    old_action: str, old_state: SelectionState, curr_data: CurrentData, max_index: int):
         """Retrieves live data in order to update the reward table with proper values"""
         logger.debug(f"post_action - current state: {self.state}")
         data = services.get_current_entry(max_action)
@@ -119,6 +122,12 @@ class SelectionEngine:
 
         rt, cpu = float(data['rt']), float(data['cpu'])
 
+        if max_index is not None:
+            pred_rt = curr_data.rt_values.reshape(5)[max_index]
+            pred_cpu = curr_data.cpu_values.reshape(5)[max_index]
+        else:
+            pred_rt = "Nan"
+            pred_cpu = "Nan"
         rt_array = np.concatenate([curr_data.rt_values.reshape(5), np.array([rt])])
         cpu_array = np.concatenate([curr_data.cpu_values.reshape(5), np.array([cpu])])
 
@@ -139,14 +148,17 @@ class SelectionEngine:
         logger.debug(f"post_action - effective_state: {effective_state}")
         reward = self.give_reward(new_state, effective_state)
 
-        delta = reward + self.discount_f * self.q_table[(new_state, max_action)] - self.q_table[(old_state, old_action)]
-        updated_value = self.q_table[(new_state, max_action)] + self.learning_rate * delta
-        self.q_table[(new_state, max_action)] = updated_value
+
+        #  Q(state, action) <- (1 - learning_rate) Q(state, action) + learning_rate (reward + discount maxQ(next_state, all_actions))
+        new_value = (1 - self.learning_rate) * self.q_table[(old_state, old_action)] + self.learning_rate * (reward + self.discount_f * self.q_table[(new_state, max_action)])
+        logger.debug(f"Formula 1: {new_value}")
+
+        self.q_table[(old_state, old_action)] = new_value
 
         with open(self.log_file, 'a') as log:
-            log.write(f"{max_action}: {delta}\n")
+            log.write(f"{{'state': {old_state}, 'action': {old_action}, 'selected_state': {new_state}, 'max_action': {max_action}, 'gross_reward': {reward}, 'new_q_value': {new_value}, 'pred_rt': {pred_rt}, 'curr_rt': {rt}, 'pred_cpu': {pred_cpu}, 'curr_cpu': {cpu} }} \n")
         logger.debug(f"post_action - reward: {reward}")
-        logger.debug(f"post_action - updated q_value: q_table[({new_state}, {max_action})]: {updated_value}")
+        logger.debug(f"post_action - updated q_value: q_table[({new_state}, {max_action})]: {new_value}")
 
     def give_reward(self, selected_state, effective_state) -> float:
         rt_delta = selected_state.rt_category - effective_state.rt_category

@@ -26,7 +26,7 @@ class QoSCategory:
         if value < 0 or value > 1:
             raise ValueError
 
-        if value < 0.3:
+        if value < 0.4:
             return cls.LOW
 
         if value < 0.6:

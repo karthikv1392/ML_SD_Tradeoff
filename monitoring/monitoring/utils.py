@@ -30,8 +30,8 @@ def prepare_output(df, n_rows, interval='1T', column='service_instance'):
     df = interpolate_missing_values(df, 'linear')
 
     # check again
-    # if not is_df_admissible(df, 40):
-    #     return
+    if not is_df_admissible(df, 40):
+        return
 
     logger.debug(f"Output shape: {df.values.shape}")
 

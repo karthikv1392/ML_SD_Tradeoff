@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_
 
 from monitoring.tables import ServiceStatus, ServiceCall, Workload, LiveServiceStatus, LiveServiceCall
-from monitoring import utils
 import monitoring.db as db
 import pandas as pd
 from monitoring import utils
@@ -128,7 +127,7 @@ def generate_cpu_csv_by_workload_id(wl_id: int, folder: str):
 
 def get_current_data(db, service_type: str):
     ts_now = datetime.now()
-    ts_past = ts_now - timedelta(minutes=10)
+    ts_past = ts_now - timedelta(minutes=11)
 
     ts_past_cpu = ts_now - timedelta(minutes=60)
 
