@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List
 from fastapi import BackgroundTasks
 
@@ -90,7 +91,9 @@ class SelectionEngine:
         if self.action is None:
             self.action = max_action
 
-        background_tasks.add_task(self.post_action, max_action, new_state, self.action, self.state, curr_data, max_index)
+        # background_tasks.add_task(self.post_action, max_action, new_state, self.action, self.state, curr_data, max_index)
+
+        self.post_action(max_action, new_state, self.action, self.state, curr_data, max_index)
 
         self.state = new_state
         self.action = max_action
@@ -99,12 +102,13 @@ class SelectionEngine:
 
     def max_action(self, curr_states: List[SelectionState]) -> (str, float, SelectionState):
         """Queries the q-table to extract the current best action, given the current state"""
-        q_values = np.array([self.q_table[(s, s.instance)] for s in curr_states], dtype=float)
-        max_index = q_values.argmax()
-        max_value = q_values.max()
+        q_values = [self.q_table[(s, s.instance)] for s in curr_states]
+        max_indexes = [index for index, item in enumerate(q_values) if item == max(q_values)]
+        max_index = random.choice(max_indexes)
+        max_value = q_values[max_index]
 
         max_action = self.world.actions[max_index]
-        logger.debug(f"max_action - selected action: '{max_action}',  having the max q_value: '{max_value}'")
+        logger.debug(f"max_action - selected action: '{max_action}' (max_index = {max_index}),  having the max q_value: '{max_value}'")
 
         new_state = curr_states[max_index]
 
@@ -121,13 +125,17 @@ class SelectionEngine:
         logger.debug(f"post_action - current data: {data}")
 
         rt, cpu = float(data['rt']), float(data['cpu'])
+        # rt = rt + random.randint(1, 100)
+        # cpu = cpu + random.randint(1, 10) / 10
 
         if max_index is not None:
             pred_rt = curr_data.rt_values.reshape(5)[max_index]
             pred_cpu = curr_data.cpu_values.reshape(5)[max_index]
+
         else:
             pred_rt = "Nan"
             pred_cpu = "Nan"
+
         rt_array = np.concatenate([curr_data.rt_values.reshape(5), np.array([rt])])
         cpu_array = np.concatenate([curr_data.cpu_values.reshape(5), np.array([cpu])])
 

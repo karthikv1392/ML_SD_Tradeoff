@@ -77,6 +77,9 @@ def adjust_shape(df, n_rows):
         # df = df.tail(n_rows)
         df = df.iloc[-n_rows:]
 
+    if df.shape[0] == n_rows - 1:
+        logger.debug(f"Adjusting size from {df.shape[0]} to {n_rows}")
+        df.loc[df.shape[0]] = [0.0, 0.0, 0.0, 0.0, 0.0]
     # shorter than requested
     if df.shape[0] < n_rows:
         logger.error(f"Dataframe has {df.shape[0]} rows. Minimum is {n_rows}")

@@ -1,4 +1,6 @@
+import json
 import os
+import random
 
 from loguru import logger
 from datetime import datetime, timedelta
@@ -11,6 +13,8 @@ import pandas as pd
 from monitoring import utils
 
 database = next(db.get_db())
+simulation_file = open('simulation.json')
+simulation_data = json.load(simulation_file)
 
 ts_format = utils.ts_format
 
@@ -171,7 +175,7 @@ def get_closest_entry(db, instance: str, timestamp: datetime):
         call = perform_call_search(db, instance, timestamp_tmp)
         if len(call) > 0:
             break
-        timestamp_tmp = timestamp_tmp - timedelta(seconds=i)
+        timestamp_tmp = timestamp_tmp - timedelta(seconds=i * 15)
         i = i + 1
 
     timestamp_tmp = timestamp
@@ -182,12 +186,15 @@ def get_closest_entry(db, instance: str, timestamp: datetime):
         status = perform_status_search(db, instance, timestamp_tmp)
         if len(status) > 0:
             break
-        timestamp_tmp = timestamp_tmp - timedelta(seconds=i)
+        timestamp_tmp = timestamp_tmp - timedelta(seconds=i * 15)
         i = i + 1
 
-    logger.debug(call)
-    logger.debug(status)
-    return {"rt": call[0].time_delta*1000*10, "cpu": status[0].cpu_perc}
+    call_value = call[-1].time_delta * 1000 * 10
+    status_value = status[-1].cpu_perc
+
+    call_value, status_value = add_simulation_data(call_value, status_value, instance)
+
+    return {"rt": call_value, "cpu": status_value}
 
 
 def perform_call_search(db, instance: str, timestamp: datetime):
@@ -202,3 +209,10 @@ def perform_status_search(db, instance: str, timestamp: datetime):
         LiveServiceStatus.service_instance == instance), (
             LiveServiceStatus.timestamp > timestamp)).order_by(LiveServiceStatus.timestamp.asc()).limit(1).all()
     return status
+
+
+def add_simulation_data(rt_value: float, cpu_value: float, instance: str) -> (float, float):
+    rt_random = round(random.uniform(simulation_data[instance]['min_rt'], simulation_data[instance]['max_rt']), 6)
+    cpu_random = round(random.uniform(simulation_data[instance]['min_cpu'], simulation_data[instance]['max_cpu']), 6)
+
+    return rt_random + rt_value, cpu_random + cpu_value

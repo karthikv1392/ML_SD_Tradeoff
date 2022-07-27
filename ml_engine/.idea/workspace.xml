@@ -5,17 +5,8 @@
       <change beforePath="$PROJECT_DIR$/../dump.rdb" beforeDir="false" afterPath="$PROJECT_DIR$/../dump.rdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rl_engine/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/rl_engine/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/carts.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/catalogue.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/orders.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/payment.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/shipping.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/logs/user.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rl_engine/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/rl_engine/model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../monitoring/monitoring/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/../monitoring/monitoring/services.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../monitoring/monitoring/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../monitoring/monitoring/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../start_stress.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../start_stress.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../swg/workload/live_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../swg/workload/live_1.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
