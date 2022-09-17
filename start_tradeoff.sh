@@ -2,4 +2,4 @@
 
 # START swg
 cd ./swg || exit 1
-./bin/swg -w ./workload/stress_1.txt -d 86400 -t http://localhost:8004 &
+./bin/swg -w ./workload/workload_soft_2.txt -d 3600 -t http://localhost:8004 &

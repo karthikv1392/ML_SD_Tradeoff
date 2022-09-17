@@ -25,10 +25,15 @@ def extract_call(data, live=False):
 
     if live:
         ts = pd.to_datetime(data['Timestamp']) + timedelta(hours=2)
+        time_delta = services.add_simulation_rt(data['TimeDelta'], registry_response['name'])
+        energy = services.add_simulation_energy(registry_response['name'])
+        instance = registry_response['name']
+
         live_service_call: LiveServiceCall = LiveServiceCall(timestamp=ts,
-                                                             time_delta=data['TimeDelta'],
-                                                             service_instance=registry_response['name'],
-                                                             service_type=registry_response['type'])
+                                                             time_delta=time_delta,
+                                                             service_instance=instance,
+                                                             service_type=registry_response['type'],
+                                                             energy=energy)
         services.store_live_service_call(live_service_call)
         return
 

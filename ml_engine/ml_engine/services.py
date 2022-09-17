@@ -43,4 +43,5 @@ def get_predictions(service_type: str, prediction_engine: PredictionEngine):
 
     data['pred_rt'] = json.dumps(data['pred_rt'].tolist())
     data['pred_cpu'] = json.dumps(data['pred_cpu'].tolist())
+
     return data

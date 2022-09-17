@@ -145,7 +145,8 @@ def get_current_data(db, service_type: str):
     calls_df = pd.read_sql(calls.statement, calls.session.bind)
 
     # scale
-    calls_df['time_delta'] = calls_df['time_delta'] * 1000 * 10
+    calls_df['time_delta'] = calls_df['time_delta']  # * 1000 * 10
+    calls_df.drop(['energy'], axis=1, inplace=True)
 
     calls_values = utils.prepare_output(calls_df, 10, '1T', 'service_instance')
 
@@ -189,12 +190,12 @@ def get_closest_entry(db, instance: str, timestamp: datetime):
         timestamp_tmp = timestamp_tmp - timedelta(seconds=i * 15)
         i = i + 1
 
-    call_value = call[-1].time_delta * 1000 * 10
+    call_value = call[-1].time_delta  # * 1000 * 10
     status_value = status[-1].cpu_perc
 
     call_value, status_value = add_simulation_data(call_value, status_value, instance)
 
-    return {"rt": call_value, "cpu": status_value}
+    return {"rt": call_value, "cpu": status_value, "energy": call[-1].energy}
 
 
 def perform_call_search(db, instance: str, timestamp: datetime):
@@ -216,3 +217,16 @@ def add_simulation_data(rt_value: float, cpu_value: float, instance: str) -> (fl
     cpu_random = round(random.uniform(simulation_data[instance]['min_cpu'], simulation_data[instance]['max_cpu']), 6)
 
     return rt_random + rt_value, cpu_random + cpu_value
+
+
+def add_simulation_rt(rt_value: float, instance: str) -> float:
+    rt_random = round(random.uniform(simulation_data[instance]['min_rt'], simulation_data[instance]['max_rt']), 6)
+    return rt_random + rt_value
+
+
+def add_simulation_energy(instance: str) -> int:
+    base_energy = simulation_data[instance]['energy']
+    energy = round(random.uniform(base_energy, base_energy+1), 0)
+
+    return energy
+

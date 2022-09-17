@@ -39,9 +39,9 @@ class SelectionEngine:
     def __init__(self,
                  service_type: str,
                  world: SelectionWorld,
-                 learning_rate: float = 0.1,
+                 learning_rate: float = 0.08,
                  discount_f: float = 0.9,
-                 epsilon: float = 0.2,
+                 epsilon: float = 0.15,
                  adaptive_epsilon: bool = False):
 
         self.log_file = f"rl_engine/logs/{service_type}.log"
@@ -103,12 +103,19 @@ class SelectionEngine:
     def max_action(self, curr_states: List[SelectionState]) -> (str, float, SelectionState):
         """Queries the q-table to extract the current best action, given the current state"""
         q_values = [self.q_table[(s, s.instance)] for s in curr_states]
+
+        if self.action is not None:
+            last_index = int(self.action[-1]) - 1
+            logger.debug(last_index)
+
+            q_values[last_index] = -9999
+            logger.debug(q_values)
         max_indexes = [index for index, item in enumerate(q_values) if item == max(q_values)]
         max_index = random.choice(max_indexes)
         max_value = q_values[max_index]
 
         max_action = self.world.actions[max_index]
-        logger.debug(f"max_action - selected action: '{max_action}' (max_index = {max_index}),  having the max q_value: '{max_value}'")
+        logger.debug(f"max_action - selected action: '{max_action}' (max_index = {max_index}), having the max q_value: '{max_value}'")
 
         new_state = curr_states[max_index]
 
@@ -124,9 +131,7 @@ class SelectionEngine:
 
         logger.debug(f"post_action - current data: {data}")
 
-        rt, cpu = float(data['rt']), float(data['cpu'])
-        # rt = rt + random.randint(1, 100)
-        # cpu = cpu + random.randint(1, 10) / 10
+        rt, cpu, energy = float(data['rt']), float(data['cpu']), int(data['energy'])
 
         if max_index is not None:
             pred_rt = curr_data.rt_values.reshape(5)[max_index]
@@ -154,25 +159,39 @@ class SelectionEngine:
 
         effective_state = SelectionState(rt_category, cpu_category, max_action)
         logger.debug(f"post_action - effective_state: {effective_state}")
-        reward = self.give_reward(new_state, effective_state)
+        reward = self.give_reward(new_state, effective_state, energy)
 
-
-        #  Q(state, action) <- (1 - learning_rate) Q(state, action) + learning_rate (reward + discount maxQ(next_state, all_actions))
+        # Q(state, action) <- (1 - learning_rate) Q(state, action) + learning_rate (reward + discount maxQ(next_state, all_actions))
         new_value = (1 - self.learning_rate) * self.q_table[(old_state, old_action)] + self.learning_rate * (reward + self.discount_f * self.q_table[(new_state, max_action)])
         logger.debug(f"Formula 1: {new_value}")
 
         self.q_table[(old_state, old_action)] = new_value
 
         with open(self.log_file, 'a') as log:
-            log.write(f"{{'state': {old_state}, 'action': {old_action}, 'selected_state': {new_state}, 'max_action': {max_action}, 'gross_reward': {reward}, 'new_q_value': {new_value}, 'pred_rt': {pred_rt}, 'curr_rt': {rt}, 'pred_cpu': {pred_cpu}, 'curr_cpu': {cpu} }} \n")
+            log.write(f"{{'state': {old_state}, 'action': {old_action}, 'selected_state': {new_state}, 'max_action': {max_action}, 'gross_reward': {reward}, 'new_q_value': {new_value}, 'pred_rt': {pred_rt}, 'curr_rt': {rt}, 'pred_cpu': {pred_cpu}, 'curr_cpu': {cpu}, 'energy_cons': {energy} }} \n")
         logger.debug(f"post_action - reward: {reward}")
         logger.debug(f"post_action - updated q_value: q_table[({new_state}, {max_action})]: {new_value}")
 
-    def give_reward(self, selected_state, effective_state) -> float:
-        rt_delta = selected_state.rt_category - effective_state.rt_category
-        cpu_delta = selected_state.cpu_category - effective_state.cpu_category
-        x, y = 1, 1
-        return x * rt_delta + y * cpu_delta
+    def give_reward(self, selected_state, effective_state, energy: int) -> float:
+
+        rt_reward = [2, 1, -1]
+
+        rt_delta = 0
+        rt_delta = rt_delta + rt_reward[effective_state.rt_category]
+
+        cpu_delta = 0
+        cpu_delta = cpu_delta + rt_reward[effective_state.cpu_category]
+
+        energy_reward = self.give_energy_reward(energy)
+        x, y, z = 2, 0.2, 1
+        return x * rt_delta + y * cpu_delta + z * energy_reward
+
+    def give_energy_reward(self, energy_value):
+        if energy_value < 3:
+            return 2
+        if energy_value < 5:
+            return 1
+        return -1
 
     def data_to_states(self, curr_data: CurrentData) -> List[SelectionState]:
 

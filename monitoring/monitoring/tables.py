@@ -10,6 +10,7 @@ class ServiceStatus(Base):
     cpu_perc = Column(Float)
     service_instance = Column(String(100))
     service_type = Column(String(100))
+    energy = Column(Integer)
 
 
 class LiveServiceStatus(Base):
@@ -40,6 +41,7 @@ class LiveServiceCall(Base):
     time_delta = Column(Float)
     service_instance = Column(String(100))
     service_type = Column(String(100))
+    energy = Column(Integer)
 
 
 class Workload(Base):

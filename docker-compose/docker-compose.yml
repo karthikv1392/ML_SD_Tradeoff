@@ -25,6 +25,24 @@ services:
     volumes:
       - .:/app
     ports:
+      - "8010:8010"
+    networks:
+      - monitoring
+      - internal
+    depends_on:
+      - registry
+    environment:
+      - LB_STRATEGY=random # rr | random | tradeoff
+      - PORT=8010
+  apigateway_rr:
+    build: ../apigateway
+    hostname: apigateway_rr
+    restart: always
+    dns: 172.17.0.1
+    dns_search: weave.local
+    volumes:
+      - .:/app
+    ports:
       - "8000:8000"
     networks:
       - monitoring
@@ -33,6 +51,7 @@ services:
       - registry
     environment:
       - LB_STRATEGY=rr # rr | random | tradeoff
+      - PORT=8000
   apigateway_tradeoff:
     build: ../apigateway
     hostname: apigateway_tradeoff
